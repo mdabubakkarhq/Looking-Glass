@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue'
 import { api } from '@/api/client'
 import type { SystemStatus } from '@/types'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
-import StatusBadge from '@/components/common/StatusBadge.vue'
 
 const status = ref<SystemStatus | null>(null)
 const loading = ref(true)

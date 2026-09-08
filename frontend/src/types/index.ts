@@ -42,10 +42,10 @@ export interface Node {
   // Detail-only fields (from show endpoint)
   maintenance?: boolean
   agent_version?: string
-  last_seen_at?: string
+  last_seen_at?: string | null
 }
 
-export interface NodeDetail extends Node {
+export interface NodeDetail extends Omit<Node, 'capabilities'> {
   maintenance: boolean
   agent_version: string
   last_seen_at: string | null
