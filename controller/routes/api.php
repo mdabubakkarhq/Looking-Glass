@@ -55,9 +55,19 @@ Route::prefix('v1')->group(function () {
         Route::post('/tests/{test:uuid}/complete', [Api\AgentController::class, 'testComplete']);
     });
 
+    // ── Admin Authentication ────────────────────────────────────
+
+    Route::prefix('admin')->group(function () {
+        Route::post('/login', [Admin\AuthController::class, 'login']);
+    });
+
     // ── Admin Endpoints (Sanctum Auth) ────────────────────────
 
     Route::middleware(['auth:sanctum'])->prefix('admin')->group(function () {
+
+        // Auth
+        Route::get('/me', [Admin\AuthController::class, 'me']);
+        Route::post('/logout', [Admin\AuthController::class, 'logout']);
 
         // Dashboard
         Route::get('/dashboard', [Admin\DashboardController::class, 'index']);
