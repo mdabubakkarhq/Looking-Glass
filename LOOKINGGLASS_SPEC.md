@@ -497,23 +497,17 @@ DNS:
 
 ---
 
-## 10. Automatic Node Latency Section
+## 10. Automatic Node Latency
 
-Immediately before the public footer, the interface should show a live latency table.
+Latency data for all nodes is shown inline in the left sidebar node selector, eliminating the need for a separate latency section.
 
-This section is inspired by public Looking Glass implementations that automatically check all available locations when a user visits.
+When the homepage loads, the frontend fetches latency data for all nodes once via the `/api/v1/nodes/latency` endpoint (cached client-side for 15 seconds). Each node card in the sidebar displays:
 
-Example:
-
-```text
-Live Node Latency
-
-Location       Node          IPv4       IPv6       Loss     Status
-Dhaka          dhaka-01      4.2 ms     5.1 ms     0%       Online
-Singapore      sg-01         41.8 ms    43.3 ms    0%       Online
-Frankfurt      fra-01        138.6 ms   141.2 ms   0%       Online
-Los Angeles    lax-01        196.4 ms   201.7 ms   0%       Online
-```
+- Node name and status badge
+- Latency value (color-coded: green <20ms, emerald <50ms, yellow <100ms, orange <200ms, red ≥200ms)
+- Location and provider
+- IPv4 availability (green "v4" badge, or gray "v4 N/A" if not configured)
+- IPv6 availability (blue "v6" badge, or gray "v6 N/A" if not configured)
 
 Important implementation rule:
 
@@ -596,9 +590,15 @@ The controller must enforce stricter limits for multi-node runs.
 
 ## 12. Download Speed Tests
 
-Each location may expose test files.
+Download test files are displayed in the main "Run Test" panel after a visitor selects a node. Test IPs (IPv4 and IPv6) with hostnames are also shown in the main panel alongside download links.
 
-Recommended sizes:
+When a visitor selects a node, the main panel shows:
+
+- **Node name and location** header
+- **Test IPs**: the node's IPv4 and IPv6 addresses with family labels and hostname, each selectable for easy copy
+- **Download test files**: one-click download buttons with size labels (e.g. 100MB, 1GB)
+
+Recommended test file sizes:
 
 - 100 MB
 - 1 GB
@@ -626,6 +626,8 @@ Optional future feature:
 - Randomly generated streaming data endpoint
 
 Static pre-generated files are simpler for v1.
+
+The admin panel retains a dedicated downloads management section at `/admin/downloads` for uploading and managing test files.
 
 ---
 
@@ -1583,7 +1585,7 @@ Compatibility rules should be documented.
 - IPv4
 - IPv6
 - SSE output
-- Automatic all-node latency table
+- Automatic all-node latency in sidebar
 - Location comparison
 - Static download speed files
 - Node health
@@ -1671,7 +1673,7 @@ Implement approved frontend design:
 - Multi-location comparison
 - Locations section
 - Downloads
-- Automatic latency section
+- Automatic latency in sidebar
 - Responsive layout
 
 ### Phase 6: Administration
@@ -1868,7 +1870,7 @@ Version 1.0 is ready only when all of the following are true:
 - MTR works over IPv4 and IPv6
 - DNS test works
 - Output streams to browser
-- Automatic all-node latency section works
+- Automatic all-node latency shown in sidebar
 - Multi-location comparison works
 - Download files work directly from nodes
 - Admin can add/disable/configure nodes

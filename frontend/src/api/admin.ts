@@ -1,11 +1,14 @@
 import type {
-  AdminApiKey,
   AdminDashboardData,
   AdminDownloadFile,
+  AdminFooterLink,
+  AdminFooterSection,
   AdminLoginRequest,
   AdminLoginResponse,
+  AdminMenuItem,
   AdminNetworkTest,
   AdminNode,
+  AdminRateLimitEvent,
   AdminSecurityEvent,
   AdminSetting,
   AdminUser,
@@ -73,6 +76,24 @@ export const adminApi = {
       localStorage.removeItem('admin_token')
       localStorage.removeItem('admin_user')
     }
+  },
+
+  async forgotPassword(email: string): Promise<{ message: string }> {
+    return adminRequest<{ message: string }>('/forgot-password', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    })
+  },
+
+  async resetPassword(data: { token: string; email: string; password: string; password_confirmation: string }): Promise<{ message: string }> {
+    return adminRequest<{ message: string }>('/reset-password', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async testSmtp(): Promise<{ message: string; success: boolean }> {
+    return adminRequest<{ message: string; success: boolean }>('/settings/smtp/test', { method: 'POST' })
   },
 
   isAuthenticated(): boolean {
@@ -148,6 +169,13 @@ export const adminApi = {
     await adminRequest(`/tests/${uuid}`, { method: 'DELETE' })
   },
 
+  async purgeTests(params: { days?: number; status?: string } = {}): Promise<{ message: string; purged: number }> {
+    return adminRequest<{ message: string; purged: number }>('/tests/purge', {
+      method: 'POST',
+      body: JSON.stringify(params),
+    })
+  },
+
   // ── Settings ──────────────────────────────────────────────
 
   async getSettings(): Promise<ApiResponse<AdminSetting[]>> {
@@ -159,6 +187,94 @@ export const adminApi = {
       method: 'PUT',
       body: JSON.stringify({ settings }),
     })
+  },
+
+  // ── Menu Items ────────────────────────────────────────────
+
+  async getMenuItems(): Promise<ApiResponse<AdminMenuItem[]>> {
+    return adminRequest<ApiResponse<AdminMenuItem[]>>('/menu-items')
+  },
+
+  async createMenuItem(data: Partial<AdminMenuItem>): Promise<ApiResponse<AdminMenuItem>> {
+    return adminRequest<ApiResponse<AdminMenuItem>>('/menu-items', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async updateMenuItem(id: number, data: Partial<AdminMenuItem>): Promise<ApiResponse<AdminMenuItem>> {
+    return adminRequest<ApiResponse<AdminMenuItem>>(`/menu-items/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async deleteMenuItem(id: number): Promise<void> {
+    await adminRequest(`/menu-items/${id}`, { method: 'DELETE' })
+  },
+
+  // ── Footer Sections & Links ───────────────────────────────
+
+  async getFooter(): Promise<ApiResponse<AdminFooterSection[]>> {
+    return adminRequest<ApiResponse<AdminFooterSection[]>>('/footer')
+  },
+
+  async createFooterSection(data: { title: string; sort_order?: number }): Promise<ApiResponse<AdminFooterSection>> {
+    return adminRequest<ApiResponse<AdminFooterSection>>('/footer/sections', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async updateFooterSection(id: number, data: Partial<AdminFooterSection>): Promise<ApiResponse<AdminFooterSection>> {
+    return adminRequest<ApiResponse<AdminFooterSection>>(`/footer/sections/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async deleteFooterSection(id: number): Promise<void> {
+    await adminRequest(`/footer/sections/${id}`, { method: 'DELETE' })
+  },
+
+  async createFooterLink(data: Partial<AdminFooterLink>): Promise<ApiResponse<AdminFooterLink>> {
+    return adminRequest<ApiResponse<AdminFooterLink>>('/footer/links', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async updateFooterLink(id: number, data: Partial<AdminFooterLink>): Promise<ApiResponse<AdminFooterLink>> {
+    return adminRequest<ApiResponse<AdminFooterLink>>(`/footer/links/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    })
+  },
+
+  async deleteFooterLink(id: number): Promise<void> {
+    await adminRequest(`/footer/links/${id}`, { method: 'DELETE' })
+  },
+
+  // ── Media Upload ──────────────────────────────────────────
+
+  async uploadMedia(file: File, folder = 'media'): Promise<ApiResponse<{ url: string; path: string; filename: string; size_bytes: number }>> {
+    const formData = new FormData()
+    formData.append('file', file)
+    formData.append('folder', folder)
+
+    const url = `${ADMIN_API}/media/upload`
+    const token = getToken()
+    const headers: HeadersInit = {
+      'Accept': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    }
+
+    const response = await fetch(url, { method: 'POST', headers, body: formData })
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({ message: 'Upload failed' }))
+      throw new ApiRequestError(body.message || `HTTP ${response.status}`, response.status)
+    }
+    return response.json() as Promise<ApiResponse<{ url: string; path: string; filename: string; size_bytes: number }>>
   },
 
   // ── Downloads ─────────────────────────────────────────────
@@ -188,6 +304,10 @@ export const adminApi = {
     return adminRequest<ApiResponse<AdminUser>>('/users', { method: 'POST', body: JSON.stringify(data) })
   },
 
+  async updateUser(id: number, data: Partial<{ name: string; email: string; password: string; password_confirmation: string }>): Promise<ApiResponse<AdminUser>> {
+    return adminRequest<ApiResponse<AdminUser>>(`/users/${id}`, { method: 'PUT', body: JSON.stringify(data) })
+  },
+
   async deleteUser(id: number): Promise<void> {
     await adminRequest(`/users/${id}`, { method: 'DELETE' })
   },
@@ -199,6 +319,12 @@ export const adminApi = {
     if (params.page) qs.set('page', String(params.page))
     if (params.severity) qs.set('severity', params.severity)
     return adminRequest<PaginatedResponse<AdminSecurityEvent>>(`/security-events?${qs}`)
+  },
+
+  // ── Rate Limits ─────────────────────────────────────────
+
+  async getRateLimits(qs: string = ''): Promise<PaginatedResponse<AdminRateLimitEvent>> {
+    return adminRequest<PaginatedResponse<AdminRateLimitEvent>>(`/logs/rate-limits?${qs}`)
   },
 
   // ── System ────────────────────────────────────────────────
@@ -213,5 +339,14 @@ export const adminApi = {
 
   async runMigrations(): Promise<{ message: string; output: string }> {
     return adminRequest('/system/update', { method: 'POST' })
+  },
+
+  // ── DNS Resolution ─────────────────────────────────────────
+
+  async resolveDns(hostname: string): Promise<ApiResponse<{ hostname: string; ipv4: string[]; ipv6: string[]; has_ipv4: boolean; has_ipv6: boolean }>> {
+    return adminRequest<ApiResponse<{ hostname: string; ipv4: string[]; ipv6: string[]; has_ipv4: boolean; has_ipv6: boolean }>>('/dns/resolve', {
+      method: 'POST',
+      body: JSON.stringify({ hostname }),
+    })
   },
 }

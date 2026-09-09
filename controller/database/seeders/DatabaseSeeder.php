@@ -134,15 +134,97 @@ class DatabaseSeeder extends Seeder
     private function seedSettings(): void
     {
         $settings = [
-            ['group' => 'branding', 'key' => 'site_name', 'value' => 'Open Looking Glass', 'type' => 'string', 'public' => true, 'description' => 'Site name'],
-            ['group' => 'branding', 'key' => 'organization_name', 'value' => 'Example Corp', 'type' => 'string', 'public' => true, 'description' => 'Org name'],
-            ['group' => 'branding', 'key' => 'footer_text', 'value' => 'Powered by Open Looking Glass', 'type' => 'string', 'public' => true, 'description' => 'Footer'],
-            ['group' => 'network', 'key' => 'asn', 'value' => 'AS64500', 'type' => 'string', 'public' => true, 'description' => 'ASN'],
-            ['group' => 'network', 'key' => 'abuse_contact', 'value' => 'abuse@example.com', 'type' => 'string', 'public' => true, 'description' => 'Abuse'],
-            ['group' => 'limits', 'key' => 'rate_limit_per_minute', 'value' => '30', 'type' => 'integer', 'public' => false, 'description' => 'Rate limit'],
+            // ── General ──
+            ['group' => 'general', 'key' => 'site_name', 'label' => 'Site Name', 'value' => 'Open Looking Glass', 'type' => 'string', 'public' => true, 'description' => 'The name displayed in the header, footer, and browser tab.'],
+            ['group' => 'general', 'key' => 'site_title', 'label' => 'Site Title', 'value' => 'Open Looking Glass — Network Testing Platform', 'type' => 'string', 'public' => true, 'description' => 'HTML title tag and OG title.'],
+            ['group' => 'general', 'key' => 'meta_description', 'label' => 'Meta Description', 'value' => 'Test network connectivity, latency, and routing from multiple global locations.', 'type' => 'text', 'public' => true, 'description' => 'SEO meta description and OG description.'],
+            ['group' => 'general', 'key' => 'organization_name', 'label' => 'Organization Name', 'value' => 'Example Corp', 'type' => 'string', 'public' => true, 'description' => 'Organization name shown alongside the site name.'],
+            ['group' => 'general', 'key' => 'email', 'label' => 'Contact Email', 'value' => 'admin@example.com', 'type' => 'string', 'public' => true, 'description' => 'Public contact email address.'],
+            ['group' => 'general', 'key' => 'asn', 'label' => 'ASN', 'value' => 'AS64500', 'type' => 'string', 'public' => true, 'description' => 'Autonomous System Number displayed in the network section.'],
+            ['group' => 'general', 'key' => 'abuse_contact', 'label' => 'Abuse Contact', 'value' => 'abuse@example.com', 'type' => 'string', 'public' => true, 'description' => 'Abuse contact email address.'],
+
+            // ── Branding & Media ──
+            ['group' => 'branding', 'key' => 'site_logo', 'label' => 'Site Logo', 'value' => '', 'type' => 'string', 'public' => true, 'description' => 'URL to a logo image (PNG/SVG). Leave empty to use the site name text.'],
+            ['group' => 'branding', 'key' => 'og_image', 'label' => 'OG Image', 'value' => '', 'type' => 'string', 'public' => true, 'description' => 'Open Graph image URL (1200x630 recommended).'],
+            ['group' => 'branding', 'key' => 'favicon', 'label' => 'Favicon', 'value' => '', 'type' => 'string', 'public' => true, 'description' => 'Favicon URL (.ico, .png, or .svg).'],
+            ['group' => 'branding', 'key' => 'footer_description', 'label' => 'Footer Description', 'value' => 'Network connectivity and performance testing platform. Fast, reliable, and secure.', 'type' => 'text', 'public' => true, 'description' => 'Short tagline shown in the footer next to the logo.'],
+            ['group' => 'branding', 'key' => 'copyright_text', 'label' => 'Copyright Text', 'value' => '', 'type' => 'string', 'public' => true, 'description' => 'Copyright text in footer bottom bar. Leave empty to auto-generate.'],
+
+            // ── Limits ──
+            ['group' => 'limits', 'key' => 'rate_limit_per_minute', 'label' => 'Rate Limit', 'value' => '30', 'type' => 'integer', 'public' => false, 'description' => 'Max API requests per minute per IP.'],
+
+            // ── Testing ──
+            ['group' => 'testing', 'key' => 'well_known_targets', 'label' => 'Well-Known Targets', 'value' => json_encode([
+                ['ip' => '1.1.1.1', 'family' => 'ipv4', 'port' => 80, 'label' => 'one.one.one.one'],
+                ['ip' => '8.8.8.8', 'family' => 'ipv4', 'port' => 80, 'label' => 'dns.google'],
+                ['ip' => '2001:4860:4860::8888', 'family' => 'ipv6', 'port' => 80, 'label' => 'dns.google'],
+                ['ip' => '2606:4700:4700::1111', 'family' => 'ipv6', 'port' => 80, 'label' => 'one.one.one.one'],
+            ]), 'type' => 'json', 'public' => true, 'description' => 'Well-known test targets shown in the UI.'],
+
+            // ── SMTP ──
+            ['group' => 'smtp', 'key' => 'smtp_host', 'label' => 'SMTP Host', 'value' => '', 'type' => 'string', 'public' => false, 'description' => 'Mail server hostname (e.g., smtp.gmail.com).'],
+            ['group' => 'smtp', 'key' => 'smtp_port', 'label' => 'SMTP Port', 'value' => '587', 'type' => 'string', 'public' => false, 'description' => 'Mail server port (usually 587 for TLS, 465 for SSL, or 25).'],
+            ['group' => 'smtp', 'key' => 'smtp_username', 'label' => 'SMTP Username', 'value' => '', 'type' => 'string', 'public' => false, 'description' => 'SMTP authentication username (often your email address).'],
+            ['group' => 'smtp', 'key' => 'smtp_password', 'label' => 'SMTP Password', 'value' => '', 'type' => 'string', 'public' => false, 'description' => 'SMTP authentication password or app-specific password.'],
+            ['group' => 'smtp', 'key' => 'smtp_encryption', 'label' => 'Encryption', 'value' => 'tls', 'type' => 'string', 'public' => false, 'description' => 'Transport encryption (tls or ssl). Leave empty for no encryption.'],
+            ['group' => 'smtp', 'key' => 'smtp_from_address', 'label' => 'From Address', 'value' => '', 'type' => 'string', 'public' => false, 'description' => 'Email address that messages are sent from.'],
+            ['group' => 'smtp', 'key' => 'smtp_from_name', 'label' => 'From Name', 'value' => '', 'type' => 'string', 'public' => false, 'description' => 'Display name for the sender.'],
         ];
+
+        // Use updateOrCreate so re-running the seeder syncs everything.
+        // In dev/testing this resets values to defaults; fine for iterative testing.
         foreach ($settings as $s) {
-            Setting::firstOrCreate(['key' => $s['key']], $s);
+            Setting::updateOrCreate(['key' => $s['key']], $s);
         }
+
+        // Remove legacy settings that are now handled by normalized tables
+        Setting::where('key', 'footer_text')->delete();
+        Setting::where('key', 'footer_links')->delete();
+
+        $this->seedMenuItems();
+        $this->seedFooter();
+    }
+
+    private function seedMenuItems(): void
+    {
+        $items = [
+            ['label' => 'Looking Glass', 'url' => '/', 'sort_order' => 0, 'open_new_tab' => false, 'active' => true],
+            ['label' => 'Compare', 'url' => '/compare', 'sort_order' => 1, 'open_new_tab' => false, 'active' => true],
+            ['label' => 'Locations', 'url' => '/locations', 'sort_order' => 2, 'open_new_tab' => false, 'active' => true],
+            ['label' => 'Network', 'url' => '/network', 'sort_order' => 3, 'open_new_tab' => false, 'active' => true],
+            ['label' => 'Status', 'url' => '/status', 'sort_order' => 4, 'open_new_tab' => false, 'active' => true],
+            ['label' => 'Peering', 'url' => '/peering', 'sort_order' => 5, 'open_new_tab' => false, 'active' => true],
+            ['label' => 'About', 'url' => '/about', 'sort_order' => 6, 'open_new_tab' => false, 'active' => true],
+        ];
+        foreach ($items as $item) {
+            \App\Models\MenuItem::firstOrCreate(['url' => $item['url']], $item);
+        }
+    }
+
+    private function seedFooter(): void
+    {
+        if (\App\Models\FooterSection::count() > 0) {
+            return;
+        }
+
+        $services = \App\Models\FooterSection::create(['title' => 'Services', 'sort_order' => 0]);
+        $services->links()->createMany([
+            ['label' => 'Looking Glass', 'url' => '/', 'external' => false, 'sort_order' => 0],
+            ['label' => 'Compare Nodes', 'url' => '/compare', 'external' => false, 'sort_order' => 1],
+            ['label' => 'Downloads', 'url' => '/downloads', 'external' => false, 'sort_order' => 2],
+        ]);
+
+        $resources = \App\Models\FooterSection::create(['title' => 'Resources', 'sort_order' => 1]);
+        $resources->links()->createMany([
+            ['label' => 'Network Info', 'url' => '/network', 'external' => false, 'sort_order' => 0],
+            ['label' => 'Peering', 'url' => '/peering', 'external' => false, 'sort_order' => 1],
+            ['label' => 'Status', 'url' => '/status', 'external' => false, 'sort_order' => 2],
+        ]);
+
+        $support = \App\Models\FooterSection::create(['title' => 'Support', 'sort_order' => 2]);
+        $support->links()->createMany([
+            ['label' => 'About', 'url' => '/about', 'external' => false, 'sort_order' => 0],
+            ['label' => 'Contact Us', 'url' => 'mailto:admin@example.com', 'external' => true, 'sort_order' => 1],
+        ]);
     }
 }

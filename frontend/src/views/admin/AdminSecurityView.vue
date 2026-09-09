@@ -28,10 +28,10 @@ function severityColor(s: string): string {
 
 <template>
   <div>
-    <h2 class="mb-6 text-xl font-bold text-white">Security Events</h2>
+    <h2 class="mb-6 text-xl font-bold text-gray-900 dark:text-white">Security Events</h2>
 
     <div class="mb-4">
-      <select v-model="filterSeverity" @change="loadEvents" class="rounded border border-gray-700 bg-gray-800 px-3 py-1.5 text-sm text-white">
+      <select v-model="filterSeverity" @change="loadEvents" class="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-white">
         <option value="">All Severities</option>
         <option value="critical">Critical</option>
         <option value="high">High</option>
@@ -43,10 +43,10 @@ function severityColor(s: string): string {
 
     <div v-if="loading" class="py-16"><LoadingSpinner size="lg" label="Loading events..." /></div>
     <div v-else class="space-y-2">
-      <div v-for="e in events" :key="e.id" class="rounded-lg border border-gray-800 bg-gray-900 px-4 py-3">
+      <div v-for="e in events" :key="e.id" class="rounded-lg border border-gray-200 bg-white px-4 py-3 dark:border-gray-800 dark:bg-gray-900">
         <div class="flex items-center gap-3">
           <span class="text-sm font-medium" :class="severityColor(e.severity)">{{ e.severity }}</span>
-          <span class="text-sm text-white">{{ e.event_type }}</span>
+          <span class="text-sm text-gray-900 dark:text-white">{{ e.event_type }}</span>
           <span v-if="e.node" class="text-xs text-gray-500">{{ e.node.name }}</span>
           <span class="ml-auto text-xs text-gray-600">{{ new Date(e.created_at).toLocaleString() }}</span>
         </div>

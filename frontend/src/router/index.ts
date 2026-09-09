@@ -24,16 +24,34 @@ const router = createRouter({
       meta: { title: 'Network Information' },
     },
     {
-      path: '/downloads',
-      name: 'downloads',
-      component: () => import('@/views/DownloadsView.vue'),
-      meta: { title: 'Download Speed Tests' },
-    },
-    {
       path: '/status',
       name: 'status',
       component: () => import('@/views/StatusView.vue'),
       meta: { title: 'System Status' },
+    },
+    {
+      path: '/compare',
+      name: 'compare',
+      component: () => import('@/views/CompareView.vue'),
+      meta: { title: 'Multi-Location Comparison' },
+    },
+    {
+      path: '/peering',
+      name: 'peering',
+      component: () => import('@/views/PeeringView.vue'),
+      meta: { title: 'Peering Information' },
+    },
+    {
+      path: '/about',
+      name: 'about',
+      component: () => import('@/views/AboutView.vue'),
+      meta: { title: 'About' },
+    },
+    {
+      path: '/downloads',
+      name: 'downloads',
+      component: () => import('@/views/DownloadsView.vue'),
+      meta: { title: 'Downloads' },
     },
 
     // ── Admin Login ──────────────────────────────────────────
@@ -42,6 +60,12 @@ const router = createRouter({
       name: 'admin-login',
       component: () => import('@/views/admin/AdminLoginView.vue'),
       meta: { title: 'Admin Login' },
+    },
+    {
+      path: '/admin/reset-password',
+      name: 'admin-reset-password',
+      component: () => import('@/views/admin/AdminResetPasswordView.vue'),
+      meta: { title: 'Reset Password' },
     },
 
     // ── Admin Routes (require auth) ──────────────────────────
@@ -87,16 +111,16 @@ const router = createRouter({
           meta: { title: 'Users' },
         },
         {
-          path: 'security',
-          name: 'admin-security',
-          component: () => import('@/views/admin/AdminSecurityView.vue'),
-          meta: { title: 'Security Events' },
-        },
-        {
           path: 'system',
           name: 'admin-system',
           component: () => import('@/views/admin/AdminSystemView.vue'),
           meta: { title: 'System' },
+        },
+        {
+          path: 'logs',
+          name: 'admin-logs',
+          component: () => import('@/views/admin/AdminLogsView.vue'),
+          meta: { title: 'Logs' },
         },
       ],
     },
@@ -122,6 +146,10 @@ router.beforeEach((to) => {
   }
   if (to.name === 'admin-login' && adminApi.isAuthenticated()) {
     return { name: 'admin-dashboard' }
+  }
+  // Allow reset-password page even when not authenticated
+  if (to.name === 'admin-reset-password') {
+    return
   }
 })
 

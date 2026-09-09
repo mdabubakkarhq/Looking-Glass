@@ -1,0 +1,25 @@
+[Unit]
+Description=Open Looking Glass Scheduler
+Documentation=https://github.com/openlookingglass/open-looking-glass
+After=network.target redis.service postgresql.service
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/looking-glass
+ExecStart=/usr/bin/php /opt/looking-glass/artisan schedule:work
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=lg-scheduler
+
+# Security hardening
+NoNewPrivileges=yes
+ProtectSystem=full
+ProtectHome=yes
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

@@ -45,6 +45,21 @@ Route::prefix('v1')->group(function () {
 
     Route::get('/status', [Api\StatusController::class, 'index']);
 
+    // ── Public Connection Info ─────────────────────────────────
+
+    Route::get('/connection', [Api\ConnectionController::class, 'index']);
+
+    // ── Public Latency Probes ──────────────────────────────────
+
+    Route::post('/latency/start', [Api\LatencyProbeController::class, 'start']);
+    Route::get('/latency/{sessionId}', [Api\LatencyProbeController::class, 'results']);
+    Route::post('/latency/report', [Api\LatencyProbeController::class, 'report']);
+
+    // ── Public iPerf3 Sessions ──────────────────────────────────
+
+    Route::post('/iperf3/session', [Api\Iperf3Controller::class, 'create']);
+    Route::get('/iperf3/session/{sessionId}', [Api\Iperf3Controller::class, 'status']);
+
     // ── Agent Endpoints (HMAC Auth) ───────────────────────────
 
     Route::post('/agent/register', [Api\AgentController::class, 'register']);
@@ -59,6 +74,8 @@ Route::prefix('v1')->group(function () {
 
     Route::prefix('admin')->group(function () {
         Route::post('/login', [Admin\AuthController::class, 'login']);
+        Route::post('/forgot-password', [Admin\AuthController::class, 'forgotPassword']);
+        Route::post('/reset-password', [Admin\AuthController::class, 'resetPassword']);
     });
 
     // ── Admin Endpoints (Sanctum Auth) ────────────────────────
@@ -82,11 +99,30 @@ Route::prefix('v1')->group(function () {
         Route::get('/tests', [Admin\TestController::class, 'index']);
         Route::get('/tests/{test:uuid}', [Admin\TestController::class, 'show']);
         Route::delete('/tests/{test:uuid}', [Admin\TestController::class, 'destroy']);
+        Route::post('/tests/purge', [Admin\TestController::class, 'purge']);
 
         // Settings
         Route::get('/settings', [Admin\SettingController::class, 'index']);
         Route::put('/settings', [Admin\SettingController::class, 'update']);
         Route::get('/settings/{group}', [Admin\SettingController::class, 'show']);
+
+        // Menu Items
+        Route::apiResource('menu-items', Admin\MenuItemController::class)->parameters([
+            'menu-items' => 'menuItem',
+        ]);
+        Route::post('/menu-items/reorder', [Admin\MenuItemController::class, 'reorder']);
+
+        // Footer Sections & Links
+        Route::get('/footer', [Admin\FooterController::class, 'index']);
+        Route::post('/footer/sections', [Admin\FooterController::class, 'storeSection']);
+        Route::put('/footer/sections/{footerSection}', [Admin\FooterController::class, 'updateSection']);
+        Route::delete('/footer/sections/{footerSection}', [Admin\FooterController::class, 'destroySection']);
+        Route::post('/footer/links', [Admin\FooterController::class, 'storeLink']);
+        Route::put('/footer/links/{footerLink}', [Admin\FooterController::class, 'updateLink']);
+        Route::delete('/footer/links/{footerLink}', [Admin\FooterController::class, 'destroyLink']);
+
+        // Media Upload
+        Route::post('/media/upload', [Admin\MediaController::class, 'store']);
 
         // Downloads
         Route::apiResource('downloads', Admin\DownloadController::class);
@@ -112,5 +148,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/system/health', [Admin\SystemController::class, 'health']);
         Route::post('/system/update', [Admin\SystemController::class, 'update']);
         Route::post('/system/rollback', [Admin\SystemController::class, 'rollback']);
+
+        // SMTP Test
+        Route::post('/settings/smtp/test', [Admin\AuthController::class, 'testSmtp']);
+
+        // DNS Resolution (admin-only, for form suggestions)
+        Route::post('/dns/resolve', [Api\DnsController::class, 'resolve']);
     });
 });

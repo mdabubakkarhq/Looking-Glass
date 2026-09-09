@@ -42,36 +42,132 @@ class TestService
             return ['valid' => false, 'message' => 'Invalid target.'];
         }
 
-        if (filter_var($target, FILTER_VALIDATE_IP) && $this->isBlockedIp($target)) {
-            return ['valid' => false, 'message' => 'Target is in a private/reserved network range.'];
+        // Raw IP: check directly against blocked networks
+        if (filter_var($target, FILTER_VALIDATE_IP)) {
+            if ($this->isBlockedIp($target)) {
+                return ['valid' => false, 'message' => 'Target is in a private/reserved network range.'];
+            }
+            return ['valid' => true];
         }
 
-        if (!filter_var($target, FILTER_VALIDATE_IP) &&
-            !preg_match('/^[a-zA-Z0-9]([a-zA-Z0-9\-\.]*[a-zA-Z0-9])?$/', $target)) {
+        // Hostname: validate format first
+        if (!preg_match('/^[a-zA-Z0-9]([a-zA-Z0-9\-\.]*[a-zA-Z0-9])?$/', $target)) {
             return ['valid' => false, 'message' => 'Invalid hostname format.'];
+        }
+
+        // DNS rebind protection: resolve hostname and check all resolved IPs
+        if (config('looking-glass.dns_rebind_protection', true)) {
+            $resolvedIps = $this->resolveHost($target);
+
+            if (empty($resolvedIps)) {
+                return ['valid' => false, 'message' => 'Unable to resolve hostname.'];
+            }
+
+            foreach ($resolvedIps as $ip) {
+                if ($this->isBlockedIp($ip)) {
+                    return ['valid' => false, 'message' => 'Resolved IP is in a private/reserved network range.'];
+                }
+            }
         }
 
         return ['valid' => true];
     }
 
+    /**
+     * Resolve a hostname to an array of IP addresses.
+     *
+     * @return string[]
+     */
+    private function resolveHost(string $hostname): array
+    {
+        $ips = [];
+        $records = @dns_get_record($hostname, DNS_A + DNS_AAAA);
+
+        if (!$records) {
+            // Fallback: try gethostbyname for A records only
+            $ip = gethostbyname($hostname);
+            if ($ip !== $hostname && filter_var($ip, FILTER_VALIDATE_IP)) {
+                $ips[] = $ip;
+            }
+            return $ips;
+        }
+
+        foreach ($records as $record) {
+            if (isset($record['ip'])) {
+                $ips[] = $record['ip'];
+            } elseif (isset($record['ipv6'])) {
+                $ips[] = $record['ipv6'];
+            }
+        }
+
+        return array_unique($ips);
+    }
+
     private function isBlockedIp(string $ip): bool
     {
-        // Only check IPv4 addresses against IPv4 CIDRs
-        if (!filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+        $blockedNetworks = config('looking-glass.blocked_networks', []);
+
+        // Check IPv4
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+            foreach ($blockedNetworks as $cidr) {
+                [$subnet, $mask] = explode('/', $cidr);
+                if (!filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
+                    continue;
+                }
+                if ((ip2long($ip) & ~((1 << (32 - (int) $mask)) - 1)) === ip2long($subnet)) {
+                    return true;
+                }
+            }
             return false;
         }
 
-        foreach (config('looking-glass.blocked_networks', []) as $cidr) {
-            [$subnet, $mask] = explode('/', $cidr);
-            // Skip IPv6 CIDRs
-            if (!filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4)) {
-                continue;
-            }
-            if ((ip2long($ip) & ~((1 << (32 - (int) $mask)) - 1)) === ip2long($subnet)) {
-                return true;
+        // Check IPv6
+        if (filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+            foreach ($blockedNetworks as $cidr) {
+                [$subnet, $mask] = explode('/', $cidr);
+                if (!filter_var($subnet, FILTER_VALIDATE_IP, FILTER_FLAG_IPV6)) {
+                    continue;
+                }
+                if ($this->ipv6InCidr($ip, $subnet, (int) $mask)) {
+                    return true;
+                }
             }
         }
+
         return false;
+    }
+
+    /**
+     * Check if an IPv6 address falls within a CIDR range.
+     */
+    private function ipv6InCidr(string $ip, string $subnet, int $mask): bool
+    {
+        $ipBin = inet_pton($ip);
+        $subnetBin = inet_pton($subnet);
+
+        if ($ipBin === false || $subnetBin === false) {
+            return false;
+        }
+
+        // Compare only the prefix bits
+        $fullBytes = intdiv($mask, 8);
+        $remainingBits = $mask % 8;
+
+        if (strncmp($ipBin, $subnetBin, $fullBytes) !== 0) {
+            return false;
+        }
+
+        if ($remainingBits > 0 && $fullBytes < 16) {
+            $ipByte = ord($ipBin[$fullBytes]);
+            $subnetByte = ord($subnetBin[$fullBytes]);
+            $mask = 0xFF << (8 - $remainingBits) & 0xFF;
+
+            if (($ipByte & $mask) !== ($subnetByte & $mask)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function createTest(

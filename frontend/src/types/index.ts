@@ -11,6 +11,62 @@ export interface ApiError {
 
 // ── Configuration ────────────────────────────────────────────
 
+export interface WellKnownTarget {
+  ip: string
+  family: 'ipv4' | 'ipv6'
+  port: number
+  label: string
+}
+
+export interface ConnectionIpInfo {
+  address: string | null
+  working: boolean
+  is_public: boolean
+  reverse_dns: string | null
+}
+
+export interface ConnectionNetworkInfo {
+  isp: string | null
+  org: string | null
+  asn: string | null
+  as_name: string | null
+  country: string | null
+  country_code: string | null
+  region: string | null
+  city: string | null
+  timezone: string | null
+}
+
+export interface ConnectionInfo {
+  ipv4: ConnectionIpInfo
+  ipv6: ConnectionIpInfo
+  ip_version: string | null
+  network: ConnectionNetworkInfo | null
+  connection_note: string | null
+  detected_at: string
+}
+
+export interface FooterLink {
+  label: string
+  url: string
+  external: boolean
+}
+
+export interface FooterSection {
+  title: string
+  links: FooterLink[]
+}
+
+export interface FooterLinksConfig {
+  sections: FooterSection[]
+}
+
+export interface MenuItemConfig {
+  label: string
+  url: string
+  open_new_tab: boolean
+}
+
 export interface AppConfig {
   site_name: string
   organization: string
@@ -18,6 +74,19 @@ export interface AppConfig {
   ip_families: IpFamily[]
   supported_features: Record<string, boolean>
   download_sizes: string[]
+  well_known_targets: WellKnownTarget[]
+  site_logo: string
+  site_title: string
+  meta_description: string
+  og_image: string
+  favicon: string
+  footer_description: string
+  footer_links: FooterLinksConfig | null
+  copyright_text: string
+  menu_items: MenuItemConfig[]
+  email: string
+  asn: string
+  abuse_contact: string
   [key: string]: unknown
 }
 
@@ -27,22 +96,32 @@ export interface Node {
   id: string          // slug
   uuid: string
   name: string
+  hostname: string | null
   city: string
   country_code: string
   provider: string
   asn: string
   ipv4: string
   ipv6: string
+  ipv4_enabled: boolean
+  ipv6_enabled: boolean
   latitude: number
   longitude: number
   uplink_mbps: number
   status: NodeStatus
   location: string
   capabilities: string[]
+  latency_enabled: boolean
+  iperf3_enabled: boolean
+  iperf3_port: number | null
+  iperf3_status: string
   // Detail-only fields (from show endpoint)
   maintenance?: boolean
   agent_version?: string
   last_seen_at?: string | null
+  last_ipv4_health_check_at?: string | null
+  last_ipv6_health_check_at?: string | null
+  last_iperf3_health_check_at?: string | null
 }
 
 export interface NodeDetail extends Omit<Node, 'capabilities'> {
@@ -63,17 +142,86 @@ export type NodeStatus = 'online' | 'offline' | 'maintenance'
 // ── Latency ──────────────────────────────────────────────────
 
 export interface LatencyEntry {
-  node_id: string
-  node_name: string
-  latency_ms: number | null
+  id: string           // node slug
+  name: string
+  location: string
+  ipv4_latency_ms: number | null
+  ipv6_latency_ms: number | null
+  packet_loss_percent: number | null
   status: NodeStatus
-  last_checked: string
+  last_checked_at: string | null
 }
 
 export interface LatencyResponse {
-  data: LatencyEntry[]
-  cached: boolean
   generated_at: string
+  nodes: LatencyEntry[]
+}
+
+export interface LatencyProbeNodeResult {
+  node_slug: string
+  node_name: string
+  status: 'pending' | 'measuring' | 'completed' | 'timeout' | 'blocked' | 'error'
+  visitor_ip?: string
+  ip_family?: string
+  started_at?: string
+  completed_at?: string
+  latency_avg_ms?: number | null
+  latency_min_ms?: number | null
+  latency_max_ms?: number | null
+  jitter_ms?: number | null
+  packet_loss_percent?: number | null
+  packets_sent?: number | null
+  packets_received?: number | null
+  error_message?: string | null
+}
+
+export interface LatencyProbeSession {
+  session_id: string
+  visitor_ip: string
+  ip_family: string
+  started_at: string
+  node_count: number
+  dispatched_count: number
+}
+
+export interface LatencyProbeResults {
+  session_id: string
+  visitor_ip: string
+  ip_family: string
+  started_at: string
+  complete: boolean
+  nodes: LatencyProbeNodeResult[]
+}
+
+// ── iPerf3 ────────────────────────────────────────────────────
+
+export interface Iperf3Session {
+  session_id: string
+  node_slug: string
+  node_name: string
+  hostname: string
+  port: number
+  token: string
+  expires_at: string
+  iperf3_status: string
+  ipv4_enabled: boolean
+  ipv6_enabled: boolean
+  commands: Iperf3Commands
+}
+
+export interface Iperf3Commands {
+  upload: string
+  download: string
+  ipv6_upload: string | null
+  ipv6_download: string | null
+}
+
+export interface Iperf3SessionStatus {
+  session_id: string
+  node_slug: string
+  status: 'active' | 'expired' | 'error'
+  expires_at: string
+  remaining_seconds: number
 }
 
 // ── Tests ────────────────────────────────────────────────────
@@ -259,12 +407,15 @@ export interface AdminNode {
   uuid: string
   slug: string
   name: string
+  hostname: string | null
   city: string | null
   country_code: string | null
   provider: string | null
   asn: string | null
   ipv4: string | null
   ipv6: string | null
+  ipv4_enabled: boolean
+  ipv6_enabled: boolean
   latitude: number | null
   longitude: number | null
   uplink_mbps: number | null
@@ -273,8 +424,15 @@ export interface AdminNode {
   public: boolean
   sort_order: number
   download_host: string | null
+  latency_enabled: boolean
+  iperf3_enabled: boolean
+  iperf3_port: number | null
+  iperf3_status: string
   agent_version: string | null
   last_seen_at: string | null
+  last_ipv4_health_check_at: string | null
+  last_ipv6_health_check_at: string | null
+  last_iperf3_health_check_at: string | null
   created_at: string
   updated_at: string
   capabilities?: AdminNodeCapability[]
@@ -347,6 +505,31 @@ export interface AdminSetting {
   type: string
   label: string | null
   description: string | null
+}
+
+export interface AdminMenuItem {
+  id: number
+  label: string
+  url: string
+  sort_order: number
+  open_new_tab: boolean
+  active: boolean
+}
+
+export interface AdminFooterSection {
+  id: number
+  title: string
+  sort_order: number
+  links: AdminFooterLink[]
+}
+
+export interface AdminFooterLink {
+  id: number
+  footer_section_id: number
+  label: string
+  url: string
+  external: boolean
+  sort_order: number
 }
 
 export interface AdminDownloadFile {

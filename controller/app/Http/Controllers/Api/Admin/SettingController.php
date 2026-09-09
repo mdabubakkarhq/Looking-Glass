@@ -38,6 +38,9 @@ class SettingController extends Controller
             Setting::setValue($item['key'], $item['value'], $type);
         }
 
+        // Apply SMTP settings to Laravel mail config in real-time
+        $this->applySmtpConfig();
+
         // Clear all settings cache
         if (method_exists(Cache::getStore(), 'tags')) {
             Cache::tags(['settings'])->flush();
@@ -46,5 +49,34 @@ class SettingController extends Controller
         }
 
         return response()->json(['message' => 'Settings updated']);
+    }
+
+    /**
+     * Apply SMTP settings from DB to Laravel's mail configuration.
+     */
+    private function applySmtpConfig(): void
+    {
+        $host = Setting::getValue('smtp_host', '');
+        if (empty($host)) {
+            return; // SMTP not configured, don't override
+        }
+
+        config([
+            'mail.default' => 'smtp',
+            'mail.mailers.smtp.host' => $host,
+            'mail.mailers.smtp.port' => (int) Setting::getValue('smtp_port', 587),
+            'mail.mailers.smtp.username' => Setting::getValue('smtp_username', ''),
+            'mail.mailers.smtp.password' => Setting::getValue('smtp_password', ''),
+            'mail.mailers.smtp.encryption' => Setting::getValue('smtp_encryption', 'tls'),
+        ]);
+
+        $fromAddress = Setting::getValue('smtp_from_address', '');
+        $fromName = Setting::getValue('smtp_from_name', '');
+        if ($fromAddress) {
+            config([
+                'mail.from.address' => $fromAddress,
+                'mail.from.name' => $fromName ?: config('app.name'),
+            ]);
+        }
     }
 }

@@ -54,13 +54,47 @@ class SystemController extends Controller
     public function update(): JsonResponse
     {
         try {
+            $currentVersion = config('app.version', '1.0.0');
+
+            $update = SystemUpdate::create([
+                'version' => $currentVersion,
+                'previous_version' => SystemUpdate::currentVersion(),
+                'status' => 'in_progress',
+                'notes' => 'Update initiated via admin API',
+                'started_at' => now(),
+            ]);
+
             Artisan::call('migrate', ['--force' => true]);
+            $migrationOutput = Artisan::output();
+
+            // Re-cache configuration
+            Artisan::call('config:cache');
+            Artisan::call('route:cache');
+
+            $update->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'metadata' => [
+                    'migration_output' => $migrationOutput,
+                ],
+            ]);
 
             return response()->json([
                 'message' => 'Migrations completed successfully.',
-                'output' => Artisan::output(),
+                'data' => [
+                    'version' => $currentVersion,
+                    'migration_output' => $migrationOutput,
+                ],
             ]);
         } catch (\Exception $e) {
+            if (isset($update)) {
+                $update->update([
+                    'status' => 'failed',
+                    'completed_at' => now(),
+                    'metadata' => ['error' => $e->getMessage()],
+                ]);
+            }
+
             return response()->json([
                 'message' => 'Update failed.',
                 'error' => $e->getMessage(),
@@ -71,13 +105,52 @@ class SystemController extends Controller
     public function rollback(): JsonResponse
     {
         try {
+            // Record the rollback attempt
+            $currentVersion = config('app.version', '1.0.0');
+            $update = SystemUpdate::create([
+                'version' => $currentVersion,
+                'previous_version' => SystemUpdate::currentVersion(),
+                'status' => 'in_progress',
+                'notes' => 'Rollback initiated via admin API',
+                'started_at' => now(),
+            ]);
+
+            // Run migrations rollback
             Artisan::call('migrate:rollback', ['--force' => true]);
+            $migrationOutput = Artisan::output();
+
+            // Clear all caches
+            Artisan::call('cache:clear');
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+
+            $update->update([
+                'status' => 'completed',
+                'completed_at' => now(),
+                'metadata' => [
+                    'migration_output' => $migrationOutput,
+                    'caches_cleared' => true,
+                ],
+            ]);
 
             return response()->json([
                 'message' => 'Rollback completed successfully.',
-                'output' => Artisan::output(),
+                'data' => [
+                    'version' => $currentVersion,
+                    'migration_output' => $migrationOutput,
+                    'caches_cleared' => true,
+                ],
             ]);
         } catch (\Exception $e) {
+            if (isset($update)) {
+                $update->update([
+                    'status' => 'failed',
+                    'completed_at' => now(),
+                    'metadata' => ['error' => $e->getMessage()],
+                ]);
+            }
+
             return response()->json([
                 'message' => 'Rollback failed.',
                 'error' => $e->getMessage(),

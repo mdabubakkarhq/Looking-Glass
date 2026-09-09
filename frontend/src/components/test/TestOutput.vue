@@ -31,7 +31,7 @@ function initTerminal(): void {
       magenta: '#c084fc',
       cyan: '#22d3ee',
       white: '#e2e8f0',
-      brightBlack: '#475569',
+      brightBlack: '#94a3b8',
       brightRed: '#fca5a5',
       brightGreen: '#86efac',
       brightYellow: '#fcd34d',
@@ -61,7 +61,7 @@ function initTerminal(): void {
   })
   resizeObserver.observe(terminalEl.value)
 
-  terminal.writeln('\x1b[90m Ready. Submit a test to see output.\x1b[0m')
+  terminal.writeln('\x1b[38;2;148;163;184m Ready. Submit a test to see output.\x1b[0m')
 }
 
 onMounted(() => {
@@ -94,22 +94,22 @@ watch(
   (status) => {
     if (status === null && terminal) {
       terminal.clear()
-      terminal.writeln('\x1b[90m Ready. Submit a test to see output.\x1b[0m')
+      terminal.writeln('\x1b[38;2;148;163;184m Ready. Submit a test to see output.\x1b[0m')
     }
   },
 )
 </script>
 
 <template>
-  <div class="overflow-hidden rounded-lg border border-gray-700 bg-[#0f172a]">
+  <div class="overflow-hidden rounded-lg border border-gray-200 bg-[#0f172a] dark:border-gray-700">
     <!-- Terminal Header -->
-    <div class="flex items-center gap-2 border-b border-gray-700 bg-gray-800 px-4 py-2">
+    <div class="flex items-center gap-2 border-b border-slate-300 bg-gray-100 px-4 py-2 dark:border-gray-700 dark:bg-gray-800">
       <div class="flex gap-1.5">
         <span class="h-3 w-3 rounded-full bg-red-500/80"></span>
         <span class="h-3 w-3 rounded-full bg-yellow-500/80"></span>
         <span class="h-3 w-3 rounded-full bg-green-500/80"></span>
       </div>
-      <span class="ml-2 text-xs text-gray-400">
+      <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">
         <span v-if="testStore.currentTest">
           {{ testStore.currentTest.test_type.toUpperCase() }}
           → {{ testStore.currentTest.target }}
@@ -119,9 +119,9 @@ watch(
       </span>
       <span
         v-if="testStore.streaming"
-        class="ml-auto inline-flex items-center gap-1 text-xs text-primary-400"
+        class="ml-auto inline-flex items-center gap-1 text-xs text-primary-600 dark:text-primary-400"
       >
-        <span class="inline-block h-1.5 w-1.5 rounded-full bg-primary-400 animate-pulse"></span>
+        <span class="inline-block h-1.5 w-1.5 rounded-full bg-primary-600 animate-pulse dark:bg-primary-400"></span>
         Streaming
       </span>
     </div>

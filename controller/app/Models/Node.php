@@ -15,12 +15,15 @@ class Node extends Model
         'uuid',
         'slug',
         'name',
+        'hostname',
         'city',
         'country_code',
         'provider',
         'asn',
         'ipv4',
         'ipv6',
+        'ipv4_enabled',
+        'ipv6_enabled',
         'latitude',
         'longitude',
         'uplink_mbps',
@@ -29,8 +32,15 @@ class Node extends Model
         'public',
         'sort_order',
         'download_host',
+        'latency_enabled',
+        'iperf3_enabled',
+        'iperf3_port',
+        'iperf3_status',
         'agent_version',
         'last_seen_at',
+        'last_ipv4_health_check_at',
+        'last_ipv6_health_check_at',
+        'last_iperf3_health_check_at',
     ];
 
     protected function casts(): array
@@ -42,7 +52,15 @@ class Node extends Model
             'maintenance' => 'boolean',
             'public' => 'boolean',
             'sort_order' => 'integer',
+            'ipv4_enabled' => 'boolean',
+            'ipv6_enabled' => 'boolean',
+            'latency_enabled' => 'boolean',
+            'iperf3_enabled' => 'boolean',
+            'iperf3_port' => 'integer',
             'last_seen_at' => 'datetime',
+            'last_ipv4_health_check_at' => 'datetime',
+            'last_ipv6_health_check_at' => 'datetime',
+            'last_iperf3_health_check_at' => 'datetime',
         ];
     }
 

@@ -1,6 +1,7 @@
 import type {
   AppConfig,
   ApiResponse,
+  ConnectionInfo,
   DownloadFile,
   LatencyResponse,
   NetworkInfo,
@@ -10,6 +11,10 @@ import type {
   TestCreateRequest,
   TestCreateResponse,
   TestResult,
+  LatencyProbeSession,
+  LatencyProbeResults,
+  Iperf3Session,
+  Iperf3SessionStatus,
 } from '@/types'
 
 const API_BASE = '/api/v1'
@@ -96,8 +101,36 @@ export const api = {
     return request<ApiResponse<NetworkInfo>>('/network')
   },
 
+  // Connection Info
+  getConnection(): Promise<ApiResponse<ConnectionInfo>> {
+    return request<ApiResponse<ConnectionInfo>>('/connection')
+  },
+
   // System Status
   getStatus(): Promise<ApiResponse<SystemStatus>> {
     return request<ApiResponse<SystemStatus>>('/status')
+  },
+
+  // Latency Probes
+  startLatencyProbe(): Promise<ApiResponse<LatencyProbeSession>> {
+    return request<ApiResponse<LatencyProbeSession>>('/latency/start', {
+      method: 'POST',
+    })
+  },
+
+  getLatencyProbeResults(sessionId: string): Promise<ApiResponse<LatencyProbeResults>> {
+    return request<ApiResponse<LatencyProbeResults>>(`/latency/${encodeURIComponent(sessionId)}`)
+  },
+
+  // iPerf3
+  createIperf3Session(nodeSlug: string): Promise<ApiResponse<Iperf3Session>> {
+    return request<ApiResponse<Iperf3Session>>('/iperf3/session', {
+      method: 'POST',
+      body: JSON.stringify({ node_slug: nodeSlug }),
+    })
+  },
+
+  getIperf3SessionStatus(sessionId: string): Promise<ApiResponse<Iperf3SessionStatus>> {
+    return request<ApiResponse<Iperf3SessionStatus>>(`/iperf3/session/${encodeURIComponent(sessionId)}`)
   },
 }

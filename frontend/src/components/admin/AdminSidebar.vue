@@ -10,7 +10,7 @@ const navItems = [
   { to: '/admin/downloads', label: 'Downloads', icon: 'download' },
   { to: '/admin/settings', label: 'Settings', icon: 'sliders' },
   { to: '/admin/users', label: 'Users', icon: 'users' },
-  { to: '/admin/security', label: 'Security', icon: 'shield' },
+  { to: '/admin/logs', label: 'Logs', icon: 'file-text' },
   { to: '/admin/system', label: 'System', icon: 'cpu' },
 ]
 
@@ -21,10 +21,10 @@ function isActive(to: string): boolean {
 </script>
 
 <template>
-  <aside class="flex w-60 flex-col border-r border-gray-800 bg-gray-900">
+  <aside class="flex w-60 flex-col border-r border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
     <!-- Logo -->
-    <div class="flex h-16 items-center border-b border-gray-800 px-4">
-      <router-link to="/admin" class="flex items-center gap-2 text-white">
+    <div class="flex h-16 items-center border-b border-gray-200 px-4 dark:border-gray-800">
+      <router-link to="/admin" class="flex items-center gap-2 text-gray-900 dark:text-white">
         <span class="text-lg font-bold">LG Admin</span>
       </router-link>
     </div>
@@ -37,18 +37,18 @@ function isActive(to: string): boolean {
         :to="item.to"
         class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors"
         :class="isActive(item.to)
-          ? 'bg-primary-600/20 text-primary-400'
-          : 'text-gray-400 hover:bg-gray-800 hover:text-white'"
+          ? 'bg-primary-100 text-primary-700 dark:bg-primary-600/20 dark:text-primary-400'
+          : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white'"
       >
         <span>{{ item.label }}</span>
       </router-link>
     </nav>
 
     <!-- Back to Site -->
-    <div class="border-t border-gray-800 p-3">
+    <div class="border-t border-gray-200 p-3 dark:border-gray-800">
       <router-link
         to="/"
-        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:text-white"
+        class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-gray-500 transition-colors hover:text-gray-900 dark:hover:text-white"
       >
         Back to Site
       </router-link>

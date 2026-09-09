@@ -1,0 +1,50 @@
+# === OS ===
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# === IDE ===
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# === Node / Frontend ===
+frontend/node_modules/
+frontend/dist/
+frontend/.env.local
+frontend/.env.*.local
+frontend/.vite/
+controller/frontend/node_modules/
+controller/frontend/dist/
+controller/frontend/.vite-temp/
+controller/frontend/npm-setup.bat
+controller/frontend/npm-build.bat
+
+# === PHP / Laravel Controller ===
+controller/vendor/
+controller/.env
+controller/.env.backup
+controller/.phpunit.result.cache
+controller/storage/logs/*.log
+controller/storage/framework/cache/*
+controller/storage/framework/sessions/*
+controller/storage/framework/views/*
+controller/bootstrap/cache/*
+
+# === Go Agent ===
+agent/agent
+agent/looking-glass-agent
+*.exe
+
+# === Docker ===
+docker-compose.override.yml
+
+# === Logs ===
+*.log
+storage/logs/
+
+# === Credentials ===
+*.pem
+*.key
+*.crt

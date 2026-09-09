@@ -8,7 +8,7 @@ defineProps<{
 <template>
   <div class="flex items-center justify-center gap-2">
     <svg
-      class="animate-spin text-primary-400"
+      class="animate-spin text-primary-600 dark:text-primary-400"
       :class="{
         'h-4 w-4': size === 'sm',
         'h-6 w-6': size === 'md' || !size,
@@ -31,6 +31,6 @@ defineProps<{
         d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
       />
     </svg>
-    <span v-if="label" class="text-sm text-gray-400">{{ label }}</span>
+    <span v-if="label" class="text-sm text-gray-500 dark:text-gray-400">{{ label }}</span>
   </div>
 </template>

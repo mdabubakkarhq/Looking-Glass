@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Open Looking Glass - Multi-location network diagnostics platform" />
+    <title>Open Looking Glass</title>
+    <script>
+      // Apply theme immediately to prevent flash of wrong theme
+      (function() {
+        var t = localStorage.getItem('lg-theme');
+        if (t === 'dark') document.documentElement.classList.add('dark');
+      })();
+    </script>
+    <script type="module" crossorigin src="/assets/index-B0cx8wjm.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-qVMGazgn.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DWAzv0Xi.css">
+  </head>
+  <body class="bg-white text-gray-900 antialiased dark:bg-gray-950 dark:text-gray-100">
+    <div id="app"></div>
+  </body>
+</html>

@@ -42,6 +42,46 @@ export const useAppStore = defineStore('app', () => {
     return config.value?.ip_families ?? ['auto', 'ipv4', 'ipv6']
   }
 
+  function getSiteLogo(): string {
+    return config.value?.site_logo ?? ''
+  }
+
+  function getSiteTitle(): string {
+    return config.value?.site_title ?? ''
+  }
+
+  function getMetaDescription(): string {
+    return config.value?.meta_description ?? ''
+  }
+
+  function getOgImage(): string {
+    return config.value?.og_image ?? ''
+  }
+
+  function getFavicon(): string {
+    return config.value?.favicon ?? ''
+  }
+
+  function getMenuItems(): import('@/types').MenuItemConfig[] {
+    return config.value?.menu_items ?? []
+  }
+
+  function getFooterDescription(): string {
+    return config.value?.footer_description ?? ''
+  }
+
+  function getFooterLinks(): import('@/types').FooterSection[] {
+    return config.value?.footer_links?.sections ?? []
+  }
+
+  function getCopyrightText(): string {
+    const custom = config.value?.copyright_text
+    if (custom && custom.trim()) return custom
+    const org = getOrganization()
+    const name = getSiteName()
+    return `© ${new Date().getFullYear()} ${org || name}. All rights reserved.`
+  }
+
   return {
     config,
     loading,
@@ -52,5 +92,14 @@ export const useAppStore = defineStore('app', () => {
     getOrganization,
     getTestTypes,
     getIpFamilies,
+    getSiteLogo,
+    getSiteTitle,
+    getMetaDescription,
+    getOgImage,
+    getFavicon,
+    getMenuItems,
+    getFooterDescription,
+    getFooterLinks,
+    getCopyrightText,
   }
 })

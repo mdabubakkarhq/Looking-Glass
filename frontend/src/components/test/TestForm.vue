@@ -16,13 +16,13 @@ function onSubmit() {
   <form @submit.prevent="onSubmit" class="space-y-4">
     <!-- Node Selector -->
     <div>
-      <label for="node-select" class="mb-1.5 block text-sm font-medium text-gray-300">
+      <label for="node-select" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
         Node
       </label>
       <select
         id="node-select"
         v-model="testStore.selectedNode"
-        class="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
       >
         <option value="" disabled>Select a node...</option>
         <option
@@ -38,13 +38,13 @@ function onSubmit() {
     <!-- Test Type & IP Family Row -->
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <div>
-        <label for="test-type" class="mb-1.5 block text-sm font-medium text-gray-300">
+        <label for="test-type" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
           Test Type
         </label>
         <select
           id="test-type"
           v-model="testStore.selectedTestType"
-          class="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
         >
           <option
             v-for="type in appStore.getTestTypes()"
@@ -57,13 +57,13 @@ function onSubmit() {
       </div>
 
       <div>
-        <label for="ip-family" class="mb-1.5 block text-sm font-medium text-gray-300">
+        <label for="ip-family" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
           IP Family
         </label>
         <select
           id="ip-family"
           v-model="testStore.selectedIpFamily"
-          class="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+          class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
         >
           <option
             v-for="family in appStore.getIpFamilies()"
@@ -78,7 +78,7 @@ function onSubmit() {
 
     <!-- Target Input -->
     <div>
-      <label for="target-input" class="mb-1.5 block text-sm font-medium text-gray-300">
+      <label for="target-input" class="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-300">
         Target
       </label>
       <input
@@ -86,7 +86,7 @@ function onSubmit() {
         v-model="testStore.target"
         type="text"
         placeholder="Enter hostname or IP address (e.g. 1.1.1.1 or google.com)"
-        class="w-full rounded-lg border border-gray-700 bg-gray-800 px-3 py-2.5 text-sm text-white placeholder-gray-500 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500"
+        class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 placeholder-gray-400 focus:border-primary-500 focus:outline-none focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white dark:placeholder-gray-500"
         autocomplete="off"
         spellcheck="false"
       />
@@ -95,7 +95,7 @@ function onSubmit() {
     <!-- Error Message -->
     <div
       v-if="testStore.error"
-      class="rounded-lg border border-red-800 bg-red-900/30 px-4 py-3 text-sm text-red-400"
+      class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-400"
     >
       {{ testStore.error }}
     </div>
@@ -124,7 +124,7 @@ function onSubmit() {
       <button
         v-if="testStore.hasResult || testStore.error"
         type="button"
-        class="rounded-lg border border-gray-700 px-4 py-2.5 text-sm font-medium text-gray-300 transition-colors hover:border-gray-600 hover:text-white"
+        class="rounded-lg border border-gray-300 px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:border-gray-400 hover:text-gray-900 dark:border-gray-700 dark:text-gray-300 dark:hover:border-gray-600 dark:hover:text-white"
         @click="testStore.resetTest()"
       >
         New Test

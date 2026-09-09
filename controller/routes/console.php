@@ -25,3 +25,6 @@ Schedule::command('lg:cleanup-security-events')->daily();
 
 // Clean up old test events weekly
 Schedule::command('lg:cleanup-tests')->weekly();
+
+// Purge old completed/failed tests and their events daily
+Schedule::command('lg:purge-tests')->daily();

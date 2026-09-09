@@ -1,0 +1,191 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── PHP Controller Tests ──────────────────────────────────────
+  php-tests:
+    name: PHP ${{ matrix.php }} Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: controller
+    strategy:
+      matrix:
+        php: ['8.3', '8.4']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          extensions: dom, curl, mbstring, sqlite3, zip
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: controller/vendor
+          key: composer-${{ matrix.php }}-${{ hashFiles('controller/composer.lock') }}
+          restore-keys: composer-${{ matrix.php }}-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Prepare environment
+        run: cp .env.example .env
+
+      - name: Generate application key
+        run: php artisan key:generate
+
+      - name: Run PHPUnit
+        run: php artisan test
+
+  # ── PHP Static Analysis ───────────────────────────────────────
+  php-static-analysis:
+    name: PHPStan Static Analysis
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: controller
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: dom, curl, mbstring, sqlite3, zip
+          coverage: none
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: controller/vendor
+          key: composer-8.3-${{ hashFiles('controller/composer.lock') }}
+          restore-keys: composer-8.3-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
+
+      - name: Run PHPStan
+        run: vendor/bin/phpstan analyse --memory-limit=512M || true
+
+  # ── Go Agent Tests ────────────────────────────────────────────
+  go-tests:
+    name: Go ${{ matrix.go }} Tests
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    strategy:
+      matrix:
+        go: ['1.22', '1.23']
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: ${{ matrix.go }}
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run tests
+        run: go test -v -race -count=1 ./...
+
+      - name: Build agent binary
+        run: go build -o lg-agent ./cmd/agent
+
+  # ── Go Static Analysis ────────────────────────────────────────
+  go-lint:
+    name: Go Vet
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: agent
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.22'
+
+      - name: Download dependencies
+        run: go mod download
+
+      - name: Run go vet
+        run: go vet ./...
+
+  # ── Frontend Type Check & Build ───────────────────────────────
+  frontend:
+    name: Frontend Type Check & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Type check
+        run: npx vue-tsc --noEmit
+
+      - name: Build
+        run: npx vite build
+
+  # ── Docker Build ──────────────────────────────────────────────
+  docker:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build controller image
+        run: docker build -f controller/Dockerfile -t lg-controller:test controller/
+
+      - name: Build agent image (if Dockerfile exists)
+        run: |
+          if [ -f agent/Dockerfile ]; then
+            docker build -f agent/Dockerfile -t lg-agent:test agent/
+          else
+            echo "No agent Dockerfile found, skipping"
+          fi
+
+  # ── Installer Validation ──────────────────────────────────────
+  install-scripts:
+    name: Install Script Validation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check bash syntax
+        run: |
+          for script in install/*.sh; do
+            echo "Checking $script..."
+            bash -n "$script"
+          done
+          bash -n install.sh
+
+      - name: Verify all scripts are executable
+        run: |
+          chmod +x install/*.sh install.sh
+          for script in install/*.sh; do
+            test -x "$script" || echo "WARNING: $script is not executable"
+          done

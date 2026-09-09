@@ -9,30 +9,53 @@ desktop.ini
 *.swp
 *.swo
 
+# === Archives & Build Artifacts ===
+*.tar.gz
+*.zip
+build_output.txt
+typecheck_output.txt
+Total
+
+# === Dev / One-off Scripts ===
+vps_*.sh
+remote_cmd.sh
+ssh_vps.ps1
+run_artisan.ps1
+create_token.php
+
+# === Tracking Docs (internal) ===
+updated-work.md
+network-observability-work.md
+
 # === Node / Frontend ===
 frontend/node_modules/
 frontend/dist/
 frontend/.env.local
 frontend/.env.*.local
 frontend/.vite/
-controller/frontend/node_modules/
-controller/frontend/dist/
-controller/frontend/.vite-temp/
-controller/frontend/npm-setup.bat
-controller/frontend/npm-build.bat
+*.tsbuildinfo
+frontend/vite.config.d.ts
 
 # === PHP / Laravel Controller ===
 controller/vendor/
 controller/.env
 controller/.env.backup
+controller/.env.bak
 controller/.phpunit.result.cache
 controller/storage/logs/*.log
 controller/storage/framework/cache/*
 controller/storage/framework/sessions/*
 controller/storage/framework/views/*
 controller/bootstrap/cache/*
+controller/database/database.sqlite
+controller/create_token.php
+controller/ - Copy.env
+
+# controller/frontend/ is a dev copy — source lives in /frontend
+controller/frontend/
 
 # === Go Agent ===
+agent/build/
 agent/agent
 agent/looking-glass-agent
 *.exe

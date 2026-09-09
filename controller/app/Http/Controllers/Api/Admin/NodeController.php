@@ -31,18 +31,30 @@ class NodeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'hostname' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^(?!https?:\/\/)(?!.*[?#\s])[a-z0-9]([a-z0-9\-\.]*[a-z0-9])?$/i',
+                'unique:nodes,hostname',
+            ],
             'city' => 'nullable|string|max:255',
             'country_code' => 'nullable|string|size:2',
             'provider' => 'nullable|string|max:255',
             'asn' => 'nullable|string|max:20',
             'ipv4' => 'nullable|ip',
             'ipv6' => 'nullable|ipv6',
+            'ipv4_enabled' => 'boolean',
+            'ipv6_enabled' => 'boolean',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'uplink_mbps' => 'nullable|integer|min:1',
             'public' => 'boolean',
             'sort_order' => 'integer|min:0',
             'download_host' => 'nullable|url',
+            'latency_enabled' => 'boolean',
+            'iperf3_enabled' => 'boolean',
+            'iperf3_port' => 'nullable|integer|min:1|max:65535',
         ]);
 
         $node = Node::create($validated);
@@ -79,12 +91,21 @@ class NodeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
+            'hostname' => [
+                'nullable',
+                'string',
+                'max:255',
+                'regex:/^(?!https?:\/\/)(?!.*[?#\s])[a-z0-9]([a-z0-9\-\.]*[a-z0-9])?$/i',
+                'unique:nodes,hostname,' . $node->id,
+            ],
             'city' => 'nullable|string|max:255',
             'country_code' => 'nullable|string|size:2',
             'provider' => 'nullable|string|max:255',
             'asn' => 'nullable|string|max:20',
             'ipv4' => 'nullable|ip',
             'ipv6' => 'nullable|ipv6',
+            'ipv4_enabled' => 'boolean',
+            'ipv6_enabled' => 'boolean',
             'latitude' => 'nullable|numeric|between:-90,90',
             'longitude' => 'nullable|numeric|between:-180,180',
             'uplink_mbps' => 'nullable|integer|min:1',
@@ -93,6 +114,10 @@ class NodeController extends Controller
             'download_host' => 'nullable|url',
             'status' => 'sometimes|in:online,offline,maintenance,error',
             'maintenance' => 'boolean',
+            'latency_enabled' => 'boolean',
+            'iperf3_enabled' => 'boolean',
+            'iperf3_port' => 'nullable|integer|min:1|max:65535',
+            'iperf3_status' => 'sometimes|in:available,busy,maintenance,unavailable',
         ]);
 
         $node->update($validated);
