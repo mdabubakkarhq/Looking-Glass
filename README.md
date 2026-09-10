@@ -9,10 +9,13 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/mdabubakkarhq/Looking-Glass/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/License-Apache%202.0-blue.svg"></a>
-  <img alt="PHP" src="https://img.shields.io/badge/PHP-8.3+-777BB4.svg">
-  <img alt="Vue" src="https://img.shields.io/badge/Vue.js-3.5+-4FC08D.svg">
-  <img alt="Go" src="https://img.shields.io/badge/Go-1.22+-00ADD8.svg">
+  <a href="https://github.com/mdabubakkarhq/Looking-Glass/blob/main/LICENSE"><img alt="Apache 2.0 License" src="https://img.shields.io/badge/Apache%202.0-blue.svg"></a>
+  <img alt="PHP" src="https://img.shields.io/badge/PHP-8.3+-777BB4.svg?logo=php&logoColor=white">
+  <img alt="Laravel" src="https://img.shields.io/badge/Laravel-12+-FF2D20.svg?logo=laravel&logoColor=white">
+  <img alt="Vue.js" src="https://img.shields.io/badge/Vue.js-3.5+-4FC08D.svg?logo=vuedotjs&logoColor=white">
+  <img alt="Node.js" src="https://img.shields.io/badge/Node.js-22+-339933.svg?logo=node.js&logoColor=white">
+  <img alt="Go" src="https://img.shields.io/badge/Go-1.22+-00ADD8.svg?logo=go&logoColor=white">
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-2496ED.svg?logo=docker&logoColor=white">
   <img alt="CI" src="https://github.com/mdabubakkarhq/Looking-Glass/actions/workflows/ci.yml/badge.svg">
 </p>
 
