@@ -12,7 +12,8 @@ RUN apk add --no-cache \
     linux-headers \
     oniguruma-dev \
     postgresql-dev \
-    zlib-dev
+    zlib-dev \
+    $PHPIZE_DEPS
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \

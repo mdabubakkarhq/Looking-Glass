@@ -24,7 +24,7 @@ jobs:
         uses: shivammathur/setup-php@v2
         with:
           php-version: ${{ matrix.php }}
-          extensions: dom, curl, mbstring, sqlite3, zip
+          extensions: dom, curl, mbstring, sqlite3, pdo_sqlite, bcmath, zip
           coverage: none
 
       - name: Cache Composer dependencies
