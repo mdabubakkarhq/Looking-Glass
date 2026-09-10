@@ -1,0 +1,14 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app
+
+    # Level 5 is a good balance for Laravel projects
+    level: 5
+
+    ignoreErrors:
+        # Laravel magic methods sometimes trigger false positives
+        - '#Call to an undefined method Illuminate\\Database\\Eloquent\\Builder::[a-zA-Z]+#'
+
