@@ -67,16 +67,6 @@ class SystemController extends Controller
             Artisan::call('migrate', ['--force' => true]);
             $migrationOutput = Artisan::output();
 
-            // Clear stale caches so the app picks up any config/route
-            // changes introduced by the new migrations.  We intentionally
-            // do NOT call config:cache / route:cache here – those are
-            // deployment-time operations and would leave persistent cache
-            // files that interfere with the in-memory SQLite database used
-            // in tests.
-            Artisan::call('config:clear');
-            Artisan::call('route:clear');
-            Artisan::call('view:clear');
-
             $update->update([
                 'status' => 'completed',
                 'completed_at' => now(),
@@ -128,12 +118,6 @@ class SystemController extends Controller
             // Run migrations rollback
             Artisan::call('migrate:rollback', ['--force' => true]);
             $migrationOutput = Artisan::output();
-
-            // Clear all caches
-            Artisan::call('cache:clear');
-            Artisan::call('config:clear');
-            Artisan::call('route:clear');
-            Artisan::call('view:clear');
 
             // Attempt to update the record. This may fail when using SQLite
             // :memory: (tests) because migrate:rollback drops all tables,
