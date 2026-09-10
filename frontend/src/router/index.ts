@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { adminApi } from '@/api/admin'
+import { useAppStore } from '@/stores/app'
 
 const router = createRouter({
   history: createWebHistory(),
@@ -133,7 +134,10 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   const title = to.meta.title as string | undefined
-  document.title = title ? `${title} — Open Looking Glass` : 'Open Looking Glass'
+  // Try to get site title from the app store (may not be loaded yet on first load)
+  const appStore = useAppStore()
+  const siteName = appStore.getSiteName() || 'Open Looking Glass'
+  document.title = title ? `${title} — ${siteName}` : siteName
 
   if (to.meta.requiresAuth && !adminApi.isAuthenticated()) {
     return { name: 'admin-login' }

@@ -65,6 +65,9 @@ class Setting extends Model
 
         Cache::forget("setting:{$key}");
 
+        // Clear the SPA index cache so meta tags reflect the new value
+        Cache::forget('spa_index_html');
+
         return $setting;
     }
 
