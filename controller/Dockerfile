@@ -46,6 +46,14 @@ COPY . .
 # Generate optimized autoloader
 RUN composer dump-autoload --optimize
 
+# Ensure required directories exist (git doesn't track empty dirs)
+RUN mkdir -p /app/storage/app/public \
+             /app/storage/framework/cache \
+             /app/storage/framework/sessions \
+             /app/storage/framework/views \
+             /app/storage/logs \
+             /app/bootstrap/cache
+
 # Set permissions
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache \
     && chmod -R 775 /app/storage /app/bootstrap/cache
