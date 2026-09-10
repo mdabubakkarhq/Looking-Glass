@@ -63,7 +63,7 @@ jobs:
         run: php artisan key:generate
 
       - name: Run PHPUnit
-        run: php artisan test --testdox
+        run: php artisan test
 
   # ── PHP Static Analysis ───────────────────────────────────────
   php-static-analysis:
