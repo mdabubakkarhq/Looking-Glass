@@ -43,8 +43,8 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 # Copy application code
 COPY . .
 
-# Generate optimized autoloader
-RUN composer dump-autoload --optimize
+# Generate optimized autoloader (skip post-autoload-dump scripts; no .env in build)
+RUN COMPOSER_NO_SCRIPTS=1 composer dump-autoload --optimize
 
 # Ensure required directories exist (git doesn't track empty dirs)
 RUN mkdir -p /app/storage/app/public \

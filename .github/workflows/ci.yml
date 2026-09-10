@@ -37,6 +37,9 @@ jobs:
       - name: Prepare environment
         run: |
           cp .env.example .env
+          # Override APP_ENV so the app can boot without APP_KEY during composer install
+          # (Laravel requires APP_KEY in production; CI has no production key)
+          sed -i 's/^APP_ENV=production$/APP_ENV=local/' .env
           # Override DB to SQLite (CI has no PostgreSQL)
           sed -i 's/^DB_CONNECTION=pgsql$/DB_CONNECTION=sqlite/' .env
           sed -i '/^DB_HOST=/d' .env
@@ -89,6 +92,9 @@ jobs:
       - name: Prepare environment
         run: |
           cp .env.example .env
+          # Override APP_ENV so the app can boot without APP_KEY during composer install
+          # (Laravel requires APP_KEY in production; CI has no production key)
+          sed -i 's/^APP_ENV=production$/APP_ENV=local/' .env
           # Override DB to SQLite (CI has no PostgreSQL)
           sed -i 's/^DB_CONNECTION=pgsql$/DB_CONNECTION=sqlite/' .env
           sed -i '/^DB_HOST=/d' .env
