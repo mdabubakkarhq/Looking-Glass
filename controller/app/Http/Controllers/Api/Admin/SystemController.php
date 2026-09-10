@@ -129,7 +129,6 @@ class SystemController extends Controller
                     'completed_at' => now(),
                     'metadata' => [
                         'migration_output' => $migrationOutput,
-                        'caches_cleared' => true,
                     ],
                 ]);
             } catch (\Exception) {
@@ -141,7 +140,6 @@ class SystemController extends Controller
                 'data' => [
                     'version' => $currentVersion,
                     'migration_output' => $migrationOutput,
-                    'caches_cleared' => true,
                 ],
             ]);
         } catch (\Exception $e) {
