@@ -169,6 +169,15 @@ class DatabaseSeeder extends Seeder
             ['group' => 'smtp', 'key' => 'smtp_encryption', 'label' => 'Encryption', 'value' => 'tls', 'type' => 'string', 'public' => false, 'description' => 'Transport encryption (tls or ssl). Leave empty for no encryption.'],
             ['group' => 'smtp', 'key' => 'smtp_from_address', 'label' => 'From Address', 'value' => '', 'type' => 'string', 'public' => false, 'description' => 'Email address that messages are sent from.'],
             ['group' => 'smtp', 'key' => 'smtp_from_name', 'label' => 'From Name', 'value' => '', 'type' => 'string', 'public' => false, 'description' => 'Display name for the sender.'],
+
+            // Security
+            ['group' => 'security', 'key' => 'rate_limit_per_minute', 'label' => 'Rate Limit (per minute)', 'value' => '30', 'type' => 'integer', 'public' => false, 'description' => 'Maximum requests per visitor per minute for test submissions.'],
+            ['group' => 'security', 'key' => 'blocked_networks', 'label' => 'Blocked Networks', 'value' => json_encode(['10.0.0.0/8', '172.16.0.0/12', '192.168.0.0/16', '127.0.0.0/8', '169.254.0.0/16', 'fc00::/7', 'fe80::/10', '::1/128']), 'type' => 'json', 'public' => false, 'description' => 'CIDR ranges that cannot be targeted. One per line or JSON array. Blocks private/reserved IPs.'],
+            ['group' => 'security', 'key' => 'dns_rebind_protection', 'label' => 'DNS Rebind Protection', 'value' => '1', 'type' => 'boolean', 'public' => false, 'description' => 'When enabled, hostnames that resolve to private/reserved IPs are blocked.'],
+            ['group' => 'security', 'key' => 'log_retention_days', 'label' => 'Log Retention (days)', 'value' => '30', 'type' => 'integer', 'public' => false, 'description' => 'Number of days to keep rate limit and security event logs.'],
+            ['group' => 'security', 'key' => 'max_output_bytes', 'label' => 'Max Output Size (bytes)', 'value' => '1048576', 'type' => 'integer', 'public' => false, 'description' => 'Maximum output size in bytes for test results. Default 1 MB (1048576).'],
+            ['group' => 'security', 'key' => 'login_max_attempts', 'label' => 'Max Login Attempts', 'value' => '5', 'type' => 'integer', 'public' => false, 'description' => 'Maximum failed login attempts before IP is temporarily banned.'],
+            ['group' => 'security', 'key' => 'login_ban_minutes', 'label' => 'Login Ban Duration (min)', 'value' => '15', 'type' => 'integer', 'public' => false, 'description' => 'Number of minutes to ban an IP after exceeding failed login attempts.'],
         ];
 
         // Use updateOrCreate so re-running the seeder syncs everything.

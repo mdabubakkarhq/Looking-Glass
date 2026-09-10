@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\NetworkTest;
 use App\Models\Node;
 use App\Models\RateLimitEvent;
+use App\Models\SecurityEvent;
 use Illuminate\Support\Facades\Cache;
 
 class TestService
@@ -23,12 +24,23 @@ class TestService
         $count = (int) Cache::get($key, 0);
 
         if ($count >= $max) {
+            $nodeId = $nodeSlug ? Node::where('slug', $nodeSlug)->value('id') : null;
+
             RateLimitEvent::create([
                 'visitor_hash' => $visitorHash,
                 'endpoint' => 'tests',
                 'reason' => 'per_ip',
-                'node_id' => $nodeSlug ? Node::where('slug', $nodeSlug)->value('id') : null,
+                'node_id' => $nodeId,
             ]);
+
+            SecurityEvent::create([
+                'event_type' => 'rate_limit_exceeded',
+                'severity' => 'warning',
+                'visitor_hash' => $visitorHash,
+                'node_id' => $nodeId,
+                'description' => "Visitor exceeded rate limit of {$max} requests/minute on test submissions.",
+            ]);
+
             return true;
         }
 
@@ -36,7 +48,7 @@ class TestService
         return false;
     }
 
-    public function validateTarget(string $target): array
+    public function validateTarget(string $target, ?string $visitorHash = null): array
     {
         if (empty($target) || strlen($target) > 255) {
             return ['valid' => false, 'message' => 'Invalid target.'];
@@ -45,6 +57,14 @@ class TestService
         // Raw IP: check directly against blocked networks
         if (filter_var($target, FILTER_VALIDATE_IP)) {
             if ($this->isBlockedIp($target)) {
+                SecurityEvent::create([
+                    'event_type' => 'private_ip_blocked',
+                    'severity' => 'warning',
+                    'visitor_hash' => $visitorHash,
+                    'metadata' => ['target' => $target],
+                    'description' => "Target {$target} is in a private/reserved network range.",
+                ]);
+
                 return ['valid' => false, 'message' => 'Target is in a private/reserved network range.'];
             }
             return ['valid' => true];
@@ -65,6 +85,14 @@ class TestService
 
             foreach ($resolvedIps as $ip) {
                 if ($this->isBlockedIp($ip)) {
+                    SecurityEvent::create([
+                        'event_type' => 'dns_rebinding_detected',
+                        'severity' => 'critical',
+                        'visitor_hash' => $visitorHash,
+                        'metadata' => ['hostname' => $target, 'resolved_ip' => $ip],
+                        'description' => "Hostname {$target} resolved to private/reserved IP {$ip}.",
+                    ]);
+
                     return ['valid' => false, 'message' => 'Resolved IP is in a private/reserved network range.'];
                 }
             }

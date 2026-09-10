@@ -117,6 +117,8 @@ The system logs the following security event types:
 | `credential_rotation`     | info     | Agent credentials were rotated                 |
 | `registration_token_used` | info     | One-time registration token was exchanged      |
 | `dns_rebinding_detected`  | critical | Target IP changed between resolution and check |
+| `failed_login_attempt`    | warning  | Failed admin login attempt from IP             |
+| `admin_login_banned`      | critical | IP banned after too many failed login attempts |
 
 ## Contact
 

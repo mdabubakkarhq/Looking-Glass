@@ -18,6 +18,7 @@ class LookingGlassServiceProvider extends ServiceProvider
     {
         $this->configureRateLimiting();
         $this->applySmtpConfig();
+        $this->applySecurityConfig();
     }
 
     /**
@@ -69,5 +70,52 @@ class LookingGlassServiceProvider extends ServiceProvider
                     ], 429, $headers);
                 });
         });
+    }
+
+    /**
+     * Apply security settings from the database to Laravel's config
+     * so that TestService and other code reads admin-configured values.
+     */
+    protected function applySecurityConfig(): void
+    {
+        try {
+            $rateLimit = Setting::getValue('rate_limit_per_minute');
+            if ($rateLimit !== null) {
+                config(['looking-glass.rate_limit_per_minute' => (int) $rateLimit]);
+            }
+
+            $blockedNetworks = Setting::getValue('blocked_networks');
+            if ($blockedNetworks !== null) {
+                config(['looking-glass.blocked_networks' => $blockedNetworks]);
+            }
+
+            $dnsRebind = Setting::getValue('dns_rebind_protection');
+            if ($dnsRebind !== null) {
+                config(['looking-glass.dns_rebind_protection' => (bool) $dnsRebind]);
+            }
+
+            $retentionDays = Setting::getValue('log_retention_days');
+            if ($retentionDays !== null) {
+                config(['looking-glass.log_retention_days' => (int) $retentionDays]);
+            }
+
+            $maxOutput = Setting::getValue('max_output_bytes');
+            if ($maxOutput !== null) {
+                config(['looking-glass.max_output_bytes' => (int) $maxOutput]);
+            }
+
+            $loginMaxAttempts = Setting::getValue('login_max_attempts');
+            if ($loginMaxAttempts !== null) {
+                config(['looking-glass.login_max_attempts' => (int) $loginMaxAttempts]);
+            }
+
+            $loginBanMinutes = Setting::getValue('login_ban_minutes');
+            if ($loginBanMinutes !== null) {
+                config(['looking-glass.login_ban_minutes' => (int) $loginBanMinutes]);
+            }
+        } catch (\Throwable $e) {
+            // Silently fall back to defaults if the DB is not available yet.
+            \Illuminate\Support\Facades\Log::debug('LookingGlassServiceProvider: Could not apply security config: ' . $e->getMessage());
+        }
     }
 }

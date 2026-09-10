@@ -111,12 +111,6 @@ const router = createRouter({
           meta: { title: 'Users' },
         },
         {
-          path: 'system',
-          name: 'admin-system',
-          component: () => import('@/views/admin/AdminSystemView.vue'),
-          meta: { title: 'System' },
-        },
-        {
           path: 'logs',
           name: 'admin-logs',
           component: () => import('@/views/admin/AdminLogsView.vue'),

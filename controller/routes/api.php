@@ -152,6 +152,9 @@ Route::prefix('v1')->group(function () {
         // SMTP Test
         Route::post('/settings/smtp/test', [Admin\AuthController::class, 'testSmtp']);
 
+        // Login Ban Management
+        Route::post('/settings/clear-login-bans', [Admin\SettingController::class, 'clearLoginBans']);
+
         // DNS Resolution (admin-only, for form suggestions)
         Route::post('/dns/resolve', [Api\DnsController::class, 'resolve']);
     });

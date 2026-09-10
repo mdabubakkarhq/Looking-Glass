@@ -6,6 +6,7 @@ use App\Models\NetworkTest;
 use App\Models\Node;
 use App\Models\NodeCredential;
 use App\Models\RegistrationToken;
+use App\Models\SecurityEvent;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Str;
 
@@ -121,6 +122,14 @@ class AgentService
         // Mark token as used
         $token->markUsed($agentIp);
 
+        SecurityEvent::create([
+            'event_type' => 'registration_token_used',
+            'severity' => 'info',
+            'source_ip' => $agentIp,
+            'node_id' => $node->id,
+            'description' => "Agent registered on node {$node->slug} using one-time token.",
+        ]);
+
         return [
             'node_id' => $node->slug,
             'node_key_id' => $nodeKeyId,
@@ -138,7 +147,7 @@ class AgentService
         $nodeKeyId = 'lk_' . Str::random(32);
         $nodeSecret = Str::random(config('looking-glass.node_secret_length', 64));
 
-        return NodeCredential::updateOrCreate(
+        $credential = NodeCredential::updateOrCreate(
             ['node_id' => $node->id],
             [
                 'node_key_id' => $nodeKeyId,
@@ -146,5 +155,14 @@ class AgentService
                 'active' => true,
             ]
         );
+
+        SecurityEvent::create([
+            'event_type' => 'credential_rotation',
+            'severity' => 'info',
+            'node_id' => $node->id,
+            'description' => "Agent credentials rotated for node {$node->slug}.",
+        ]);
+
+        return $credential;
     }
 }

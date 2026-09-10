@@ -29,7 +29,7 @@ class TestController extends Controller
             ], 429);
         }
 
-        $targetValidation = $this->testService->validateTarget($request->input('target'));
+        $targetValidation = $this->testService->validateTarget($request->input('target'), $visitorHash);
         if (!$targetValidation['valid']) {
             return response()->json([
                 'message' => $targetValidation['message'],

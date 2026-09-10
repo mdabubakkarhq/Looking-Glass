@@ -11,7 +11,6 @@ const navItems = [
   { to: '/admin/settings', label: 'Settings', icon: 'sliders' },
   { to: '/admin/users', label: 'Users', icon: 'users' },
   { to: '/admin/logs', label: 'Logs', icon: 'file-text' },
-  { to: '/admin/system', label: 'System', icon: 'cpu' },
 ]
 
 function isActive(to: string): boolean {

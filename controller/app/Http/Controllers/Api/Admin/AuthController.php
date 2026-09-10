@@ -28,13 +28,63 @@ class AuthController extends Controller
             'device_name' => 'nullable|string|max:255',
         ]);
 
+        $ip = $request->ip();
+        $banKey = 'login_ban:' . $ip;
+        $attemptKey = 'login_attempts:' . $ip;
+
+        // Check if IP is currently banned
+        if (Cache::has($banKey)) {
+            $ttl = Cache::get($banKey, 0);
+            $minutes = (int) config('looking-glass.login_ban_minutes', 15);
+
+            return response()->json([
+                'message' => "Too many failed login attempts. Try again in {$minutes} minutes.",
+            ], 429);
+        }
+
         $user = User::where('email', $request->input('email'))->first();
 
         if (!$user || !Hash::check($request->input('password'), $user->password)) {
+            // Increment failed attempts
+            $attempts = (int) Cache::increment($attemptKey);
+            Cache::put($attemptKey, $attempts, now()->addMinutes((int) config('looking-glass.login_ban_minutes', 15)));
+
+            $maxAttempts = (int) config('looking-glass.login_max_attempts', 5);
+
+            \App\Models\SecurityEvent::create([
+                'event_type' => 'failed_login_attempt',
+                'severity' => 'warning',
+                'source_ip' => $ip,
+                'metadata' => ['email' => $request->input('email'), 'attempts' => $attempts],
+                'description' => "Failed login attempt #{$attempts} from IP {$ip}.",
+            ]);
+
+            // Ban the IP if max attempts exceeded
+            if ($attempts >= $maxAttempts) {
+                $banMinutes = (int) config('looking-glass.login_ban_minutes', 15);
+                Cache::put($banKey, true, now()->addMinutes($banMinutes));
+                Cache::forget($attemptKey);
+
+                \App\Models\SecurityEvent::create([
+                    'event_type' => 'admin_login_banned',
+                    'severity' => 'critical',
+                    'source_ip' => $ip,
+                    'metadata' => ['email' => $request->input('email'), 'attempts' => $attempts, 'ban_minutes' => $banMinutes],
+                    'description' => "IP {$ip} banned for {$banMinutes} minutes after {$attempts} failed login attempts.",
+                ]);
+
+                return response()->json([
+                    'message' => "Too many failed login attempts. Try again in {$banMinutes} minutes.",
+                ], 429);
+            }
+
             throw ValidationException::withMessages([
                 'email' => ['The provided credentials are incorrect.'],
             ]);
         }
+
+        // Successful login — clear attempt counter
+        Cache::forget($attemptKey);
 
         $deviceName = $request->input('device_name', 'admin-panel');
         $token = $user->createToken($deviceName)->plainTextToken;

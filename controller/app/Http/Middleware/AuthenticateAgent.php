@@ -27,6 +27,13 @@ class AuthenticateAgent
         // Check timestamp freshness (prevent replay attacks)
         $requestTime = \Carbon\Carbon::parse($timestamp);
         if ($requestTime->diffInSeconds(now()) > 30) {
+            \App\Models\SecurityEvent::create([
+                'event_type' => 'replay_attack_detected',
+                'severity' => 'critical',
+                'source_ip' => $request->ip(),
+                'description' => 'Request timestamp outside acceptable 30-second window.',
+            ]);
+
             return response()->json(['message' => 'Request timestamp expired.'], 401);
         }
 
@@ -44,7 +51,7 @@ class AuthenticateAgent
 
         if (!$this->agentService->verifySignature($payload, $signature, $credential->node_secret)) {
             \App\Models\SecurityEvent::create([
-                'event_type' => 'agent_auth_failure',
+                'event_type' => 'invalid_agent_signature',
                 'severity' => 'warning',
                 'source_ip' => $request->ip(),
                 'node_id' => $credential->node_id,

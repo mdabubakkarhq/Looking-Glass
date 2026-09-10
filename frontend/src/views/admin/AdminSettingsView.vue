@@ -4,13 +4,14 @@ import { adminApi } from '@/api/admin'
 import type { AdminSetting, AdminMenuItem, AdminFooterSection, AdminFooterLink } from '@/types'
 import LoadingSpinner from '@/components/common/LoadingSpinner.vue'
 
-type Tab = 'general' | 'header' | 'footer' | 'smtp'
+type Tab = 'general' | 'header' | 'footer' | 'smtp' | 'security'
 const activeTab = ref<Tab>('general')
 const tabs: { key: Tab; label: string }[] = [
   { key: 'general', label: 'General' },
   { key: 'header', label: 'Header' },
   { key: 'footer', label: 'Footer' },
   { key: 'smtp', label: 'SMTP' },
+  { key: 'security', label: 'Security' },
 ]
 
 const loading = ref(true)
@@ -259,6 +260,27 @@ async function testSmtp() {
   }
 }
 
+// ── Security ────────────────────────────────────────────────
+const securitySettings = computed(() => settings.value.filter(s => s.group === 'security'))
+
+function getBlockedNetworksText(): string {
+  const val = editValues.value['blocked_networks']
+  if (Array.isArray(val)) return val.join('\n')
+  if (typeof val === 'string') {
+    try {
+      const parsed = JSON.parse(val)
+      if (Array.isArray(parsed)) return parsed.join('\n')
+    } catch { /* not JSON, display as-is */ }
+    return val
+  }
+  return ''
+}
+
+function setBlockedNetworksText(text: string) {
+  const networks = text.split('\n').map(s => s.trim()).filter(s => s.length > 0)
+  editValues.value['blocked_networks'] = networks as any
+}
+
 async function saveSettings() {
   saving.value = true
   try {
@@ -286,7 +308,7 @@ onMounted(async () => {
   <div>
     <div class="mb-6 flex items-center justify-between">
       <h2 class="text-xl font-bold text-gray-900 dark:text-white">Settings</h2>
-      <button v-if="activeTab === 'general'" :disabled="saving" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50" @click="saveSettings">
+      <button v-if="activeTab === 'general' || activeTab === 'security'" :disabled="saving" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50" @click="saveSettings">
         {{ saving ? 'Saving...' : 'Save Changes' }}
       </button>
     </div>
@@ -604,6 +626,83 @@ onMounted(async () => {
         </div>
       </div>
       <!-- END SMTP TAB -->
+
+      <!-- SECURITY TAB -->
+      <div v-if="activeTab === 'security'" class="space-y-6">
+        <div class="rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
+          <div class="border-b border-gray-200 px-5 py-3 dark:border-gray-800">
+            <h3 class="text-sm font-semibold text-gray-900 dark:text-white">Security Settings</h3>
+          </div>
+          <div class="space-y-5 p-5">
+            <p class="text-xs text-gray-500">Configure rate limiting, IP blocking, and security protections. Changes take effect immediately.</p>
+
+            <div v-if="securitySettings.length === 0" class="py-8 text-center text-sm text-gray-500">
+              No security settings found. Run the settings seeder to create them.
+            </div>
+
+            <!-- Rate Limit -->
+            <div v-if="editValues['rate_limit_per_minute'] !== undefined">
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Rate Limit (per minute)</label>
+              <p class="mb-1.5 text-xs text-gray-500">Maximum test submissions per visitor per minute.</p>
+              <input type="number" min="1" max="1000"
+                :value="Number(editValues['rate_limit_per_minute'] ?? 30)"
+                @input="editValues['rate_limit_per_minute'] = Number(($event.target as HTMLInputElement).value)"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            </div>
+
+            <!-- Blocked Networks -->
+            <div v-if="editValues['blocked_networks'] !== undefined">
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Blocked Networks</label>
+              <p class="mb-1.5 text-xs text-gray-500">CIDR ranges that cannot be targeted (private/reserved IPs). One per line.</p>
+              <textarea rows="8"
+                :value="getBlockedNetworksText()"
+                @input="setBlockedNetworksText(($event.target as HTMLTextAreaElement).value)"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 font-mono text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
+                placeholder="10.0.0.0/8&#10;172.16.0.0/12&#10;192.168.0.0/16"></textarea>
+            </div>
+
+            <!-- DNS Rebind Protection -->
+            <div v-if="editValues['dns_rebind_protection'] !== undefined">
+              <label class="flex items-center gap-3 cursor-pointer">
+                <div class="relative">
+                  <input type="checkbox" class="sr-only"
+                    :checked="String(editValues['dns_rebind_protection']) === '1' || editValues['dns_rebind_protection'] === true"
+                    @change="editValues['dns_rebind_protection'] = ($event.target as HTMLInputElement).checked ? '1' : '0'" />
+                  <div class="h-6 w-11 rounded-full bg-gray-200 transition-colors dark:bg-gray-700"
+                    :class="{ '!bg-primary-600': String(editValues['dns_rebind_protection']) === '1' || editValues['dns_rebind_protection'] === true }"></div>
+                  <div class="absolute left-0.5 top-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform"
+                    :class="{ 'translate-x-5': String(editValues['dns_rebind_protection']) === '1' || editValues['dns_rebind_protection'] === true }"></div>
+                </div>
+                <div>
+                  <span class="text-sm font-medium text-gray-700 dark:text-gray-300">DNS Rebind Protection</span>
+                  <p class="text-xs text-gray-500">Block hostnames that resolve to private/reserved IPs.</p>
+                </div>
+              </label>
+            </div>
+
+            <!-- Log Retention -->
+            <div v-if="editValues['log_retention_days'] !== undefined">
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Log Retention (days)</label>
+              <p class="mb-1.5 text-xs text-gray-500">Number of days to keep rate limit and security event logs.</p>
+              <input type="number" min="1" max="365"
+                :value="Number(editValues['log_retention_days'] ?? 30)"
+                @input="editValues['log_retention_days'] = Number(($event.target as HTMLInputElement).value)"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            </div>
+
+            <!-- Max Output Bytes -->
+            <div v-if="editValues['max_output_bytes'] !== undefined">
+              <label class="mb-1 block text-sm font-medium text-gray-700 dark:text-gray-300">Max Output Size (bytes)</label>
+              <p class="mb-1.5 text-xs text-gray-500">Maximum output size for test results. Default: 1048576 (1 MB).</p>
+              <input type="number" min="1024" max="10485760"
+                :value="Number(editValues['max_output_bytes'] ?? 1048576)"
+                @input="editValues['max_output_bytes'] = Number(($event.target as HTMLInputElement).value)"
+                class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <!-- END SECURITY TAB -->
 
       <!-- Section Modal -->
       <div v-if="sectionFormOpen" class="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4" @click.self="closeSectionForm">
