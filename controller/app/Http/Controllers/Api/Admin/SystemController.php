@@ -67,9 +67,16 @@ class SystemController extends Controller
             Artisan::call('migrate', ['--force' => true]);
             $migrationOutput = Artisan::output();
 
-            // Update the record BEFORE config:cache/route:cache, because
-            // config:cache can trigger a database reconnection, and with
-            // SQLite :memory: a new connection means a fresh empty database.
+            // Clear stale caches so the app picks up any config/route
+            // changes introduced by the new migrations.  We intentionally
+            // do NOT call config:cache / route:cache here – those are
+            // deployment-time operations and would leave persistent cache
+            // files that interfere with the in-memory SQLite database used
+            // in tests.
+            Artisan::call('config:clear');
+            Artisan::call('route:clear');
+            Artisan::call('view:clear');
+
             $update->update([
                 'status' => 'completed',
                 'completed_at' => now(),
@@ -77,10 +84,6 @@ class SystemController extends Controller
                     'migration_output' => $migrationOutput,
                 ],
             ]);
-
-            // Re-cache configuration (non-DB file operations)
-            Artisan::call('config:cache');
-            Artisan::call('route:cache');
 
             return response()->json([
                 'message' => 'Migrations completed successfully.',
