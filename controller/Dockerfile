@@ -4,6 +4,16 @@ FROM php:8.3-fpm-alpine
 RUN apk add --no-cache \
     bash \
     curl \
+    autoconf \
+    dpkg-dev \
+    dpkg \
+    file \
+    g++ \
+    gcc \
+    libc-dev \
+    make \
+    pkgconf \
+    re2c \
     freetype-dev \
     icu-dev \
     libjpeg-turbo-dev \
@@ -12,8 +22,7 @@ RUN apk add --no-cache \
     linux-headers \
     oniguruma-dev \
     postgresql-dev \
-    zlib-dev \
-    $PHPIZE_DEPS
+    zlib-dev
 
 # Install PHP extensions
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
@@ -43,8 +52,10 @@ RUN composer install --no-dev --no-scripts --no-autoloader --prefer-dist
 # Copy application code
 COPY . .
 
-# Generate optimized autoloader (skip post-autoload-dump scripts; no .env in build)
-RUN COMPOSER_NO_SCRIPTS=1 composer dump-autoload --optimize
+# Generate optimized autoloader (create temp .env so artisan package:discover can boot)
+RUN echo "APP_ENV=local" > .env && \
+    composer dump-autoload --optimize && \
+    rm -f .env
 
 # Ensure required directories exist (git doesn't track empty dirs)
 RUN mkdir -p /app/storage/app/public \
