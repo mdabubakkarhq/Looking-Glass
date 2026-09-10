@@ -47,6 +47,7 @@ controller/storage/framework/cache/*
 controller/storage/framework/sessions/*
 controller/storage/framework/views/*
 controller/bootstrap/cache/*
+!controller/bootstrap/cache/.gitkeep
 controller/database/database.sqlite
 controller/create_token.php
 controller/ - Copy.env
