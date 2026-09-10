@@ -342,6 +342,11 @@ onMounted(async () => {
               <textarea v-if="s.type === 'text'" :value="String(editValues[s.key] ?? '')" @input="editValues[s.key] = ($event.target as HTMLTextAreaElement).value" rows="3" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
               <input v-else :value="String(editValues[s.key] ?? '')" @input="editValues[s.key] = ($event.target as HTMLInputElement).value" type="text" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
             </div>
+            <div class="flex justify-end border-t border-gray-100 pt-4 dark:border-gray-800">
+              <button :disabled="saving" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50" @click="saveSettings">
+                {{ saving ? 'Saving...' : 'Save Changes' }}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -369,6 +374,11 @@ onMounted(async () => {
 
               <!-- Plain text fields (copyright_text, etc.) -->
               <input v-else :value="String(editValues[s.key] ?? '')" @input="editValues[s.key] = ($event.target as HTMLInputElement).value" type="text" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-900 focus:border-primary-500 focus:ring-1 focus:ring-primary-500 dark:border-gray-700 dark:bg-gray-800 dark:text-white" />
+            </div>
+            <div class="flex justify-end border-t border-gray-100 pt-4 dark:border-gray-800">
+              <button :disabled="saving" class="rounded-lg bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-500 disabled:opacity-50" @click="saveSettings">
+                {{ saving ? 'Saving...' : 'Save Changes' }}
+              </button>
             </div>
           </div>
         </div>

@@ -35,7 +35,7 @@ function onLogoError(el: Event) {
           <path d="M8 22 L16 8 L24 22 Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" fill="none" />
           <circle cx="16" cy="18" r="3" fill="currentColor" />
         </svg>
-        <span class="hidden sm:inline">{{ appStore.getSiteName() }}</span>
+        <span v-if="!appStore.getSiteLogo() || logoFailed" class="hidden sm:inline">{{ appStore.getSiteName() }}</span>
       </router-link>
 
       <!-- Desktop Nav -->
