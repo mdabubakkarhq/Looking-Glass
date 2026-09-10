@@ -82,7 +82,7 @@
 | **Database** | PostgreSQL 15+ / MariaDB 10.11+ / SQLite 3.35+ | PostgreSQL 16 |
 | **Cache/Queue** | Redis 7+ | Redis 7 |
 | **Web Server** | NGINX 1.24+ | NGINX |
-| **Node.js** | 20+ (build only) | 20 LTS |
+| **Node.js** | 22+ (build only) | 22 LTS |
 | **Composer** | 2.x | Latest |
 | **Network** | Public IP | Public IPv4 + IPv6 |
 
@@ -228,8 +228,8 @@ sudo apt install redis-server
 # NGINX
 sudo apt install nginx
 
-# Node.js 20+
-curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+# Node.js 22+
+curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
 sudo apt install nodejs
 
 # Composer

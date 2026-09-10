@@ -34,7 +34,7 @@ Vue 3 Frontend  →  Laravel API Controller  →  Go Remote Node Agent
 - PostgreSQL 15+ (or MySQL/MariaDB)
 - Redis 7+
 - NGINX
-- Node.js 20+ (for frontend build)
+- Node.js 22+ (for frontend build)
 
 ### Remote Node Agent
 - Linux (any modern distribution)

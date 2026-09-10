@@ -69,7 +69,7 @@ install_nodejs() {
     if command_exists node; then
         local node_major
         node_major=$(node -v 2>/dev/null | grep -oP 'v\K[0-9]+' || echo "0")
-        if (( node_major >= 20 )); then
+        if (( node_major >= 22 )); then
             success "Node.js $(node -v) already installed"
             return
         fi
