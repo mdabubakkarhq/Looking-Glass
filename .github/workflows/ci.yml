@@ -34,9 +34,6 @@ jobs:
           key: composer-${{ matrix.php }}-${{ hashFiles('controller/composer.lock') }}
           restore-keys: composer-${{ matrix.php }}-
 
-      - name: Install dependencies
-        run: composer install --no-interaction --prefer-dist
-
       - name: Prepare environment
         run: |
           cp .env.example .env
@@ -53,6 +50,11 @@ jobs:
           sed -i 's/^QUEUE_CONNECTION=redis$/QUEUE_CONNECTION=sync/' .env
           # Create SQLite database
           touch database/database.sqlite
+          # Ensure bootstrap/cache directory exists (git doesn't track empty dirs)
+          mkdir -p bootstrap/cache
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist
 
       - name: Generate application key
         run: php artisan key:generate
@@ -83,6 +85,23 @@ jobs:
           path: controller/vendor
           key: composer-8.3-${{ hashFiles('controller/composer.lock') }}
           restore-keys: composer-8.3-
+
+      - name: Prepare environment
+        run: |
+          cp .env.example .env
+          # Override DB to SQLite (CI has no PostgreSQL)
+          sed -i 's/^DB_CONNECTION=pgsql$/DB_CONNECTION=sqlite/' .env
+          sed -i '/^DB_HOST=/d' .env
+          sed -i '/^DB_PORT=/d' .env
+          sed -i '/^DB_DATABASE=/d' .env
+          sed -i '/^DB_USERNAME=/d' .env
+          sed -i '/^DB_PASSWORD=/d' .env
+          # Override cache/session/queue to non-Redis drivers (CI has no Redis)
+          sed -i 's/^CACHE_STORE=redis$/CACHE_STORE=array/' .env
+          sed -i 's/^SESSION_DRIVER=redis$/SESSION_DRIVER=array/' .env
+          sed -i 's/^QUEUE_CONNECTION=redis$/QUEUE_CONNECTION=sync/' .env
+          # Ensure bootstrap/cache directory exists (git doesn't track empty dirs)
+          mkdir -p bootstrap/cache
 
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist

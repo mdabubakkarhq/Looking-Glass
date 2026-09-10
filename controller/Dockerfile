@@ -8,7 +8,6 @@ RUN apk add --no-cache \
     icu-dev \
     libjpeg-turbo-dev \
     libpng-dev \
-    libwebp-dev \
     libzip-dev \
     linux-headers \
     oniguruma-dev \
@@ -16,7 +15,7 @@ RUN apk add --no-cache \
     zlib-dev
 
 # Install PHP extensions
-RUN docker-php-ext-configure gd --with-freetype --with-jpeg --with-webp \
+RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install -j$(nproc) \
     bcmath \
     exif \
